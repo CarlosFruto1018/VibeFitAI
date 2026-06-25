@@ -49,7 +49,7 @@ export function LoadChart({ data, exerciseName }: LoadChartProps) {
           <Tooltip
             contentStyle={{ background: "#0f172a", border: "none", borderRadius: 10, color: "#f8fafc", fontSize: 12, padding: "6px 12px" }}
             labelStyle={{ color: "#94a3b8", fontSize: 11 }}
-            formatter={(v: number) => [`${v} kg`, "Carga máx."]}
+            formatter={(v) => [`${v} kg`, "Carga máx."]}
             cursor={{ stroke: "#e2e8f0", strokeWidth: 1 }}
           />
           <Line

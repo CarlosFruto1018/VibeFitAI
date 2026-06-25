@@ -33,7 +33,7 @@ export function DashboardChart({ data }: Props) {
             fontSize: 12,
             padding: "6px 12px",
           }}
-          formatter={(v: number) => [`${v} kg`, "Volumen"]}
+          formatter={(v) => [`${v} kg`, "Volumen"]}
           cursor={{ stroke: "#e2e8f0", strokeWidth: 1 }}
         />
         <Area
