@@ -86,4 +86,8 @@ async function processImage(job: z.infer<typeof JobSchema>) {
     .where(eq(rawInputs.id, job.rawInputId));
 }
 
-export const POST = verifySignatureAppRouter(handler);
+export async function POST(req: NextRequest) {
+  const verifySignature = verifySignatureAppRouter(handler);
+
+  return verifySignature(req);
+}

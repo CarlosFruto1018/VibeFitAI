@@ -38,6 +38,7 @@ export function AudioRecorder({ onRecorded, disabled }: AudioRecorderProps) {
   }
 
   const isRecording = state === "recording";
+  const isProcessing = state === "processing";
   const isDone = state === "done";
 
   return (
@@ -52,7 +53,7 @@ export function AudioRecorder({ onRecorded, disabled }: AudioRecorderProps) {
         )}
         <button
           onClick={handleToggle}
-          disabled={disabled || state === "recording"}
+          disabled={disabled || isProcessing}
           className={cn(
             "relative w-20 h-20 rounded-full flex items-center justify-center transition-all duration-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400",
             isRecording
@@ -72,7 +73,7 @@ export function AudioRecorder({ onRecorded, disabled }: AudioRecorderProps) {
       <p className="text-sm text-slate-500 text-center">
         {state === "idle" && "Toca para hablar"}
         {state === "recording" && <span className="text-red-500 font-medium">Escuchando... toca para detener</span>}
-        {state === "done" && !transcript && "Procesando..."}
+        {isProcessing && "Procesando..."}
         {state === "done" && !transcript && "No se detectó audio, intenta de nuevo"}
       </p>
 

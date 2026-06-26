@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback } from "react";
 
-type RecorderState = "idle" | "recording" | "done";
+type RecorderState = "idle" | "recording" | "processing" | "done";
 
 interface UseSpeechRecognitionReturn {
   state: RecorderState;
@@ -110,6 +110,7 @@ export function useSpeechRecognition(lang = "es-ES"): UseSpeechRecognitionReturn
 
   const stop = useCallback(() => {
     recognitionRef.current?.stop();
+    setState("processing");
     // onend will fire and set state to "done"
   }, []);
 
