@@ -15,7 +15,7 @@ export async function transcribeAudio(
     ? "ogg"
     : "wav";
 
-  const file = new File([audioBuffer], `audio.${extension}`, { type: mimeType });
+  const file = new File([new Uint8Array(audioBuffer)], `audio.${extension}`, { type: mimeType });
 
   const response = await openai.audio.transcriptions.create({
     file,

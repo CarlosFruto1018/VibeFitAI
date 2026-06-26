@@ -14,10 +14,32 @@ interface UseSpeechRecognitionReturn {
   supported: boolean;
 }
 
+type SpeechRecognitionConstructor = new () => SpeechRecognitionInstance;
+
+interface SpeechRecognitionInstance {
+  lang: string;
+  continuous: boolean;
+  interimResults: boolean;
+  onresult: ((e: SpeechRecognitionEvent) => void) | null;
+  onerror: ((e: SpeechRecognitionErrorEvent) => void) | null;
+  onend: (() => void) | null;
+  start(): void;
+  stop(): void;
+  abort(): void;
+}
+
+interface SpeechRecognitionEvent {
+  results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognitionErrorEvent {
+  error: string;
+}
+
 declare global {
   interface Window {
-    SpeechRecognition: typeof SpeechRecognition;
-    webkitSpeechRecognition: typeof SpeechRecognition;
+    SpeechRecognition: SpeechRecognitionConstructor;
+    webkitSpeechRecognition: SpeechRecognitionConstructor;
   }
 }
 
@@ -25,7 +47,7 @@ export function useSpeechRecognition(lang = "es-ES"): UseSpeechRecognitionReturn
   const [state, setState] = useState<RecorderState>("idle");
   const [transcript, setTranscript] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   // Keep a mutable ref so onend can read the latest value
   const transcriptRef = useRef("");
 
@@ -46,7 +68,7 @@ export function useSpeechRecognition(lang = "es-ES"): UseSpeechRecognitionReturn
     setTranscript("");
     transcriptRef.current = "";
 
-    const rec = new SpeechRecognitionAPI();
+    const rec = new (SpeechRecognitionAPI as SpeechRecognitionConstructor)();
     rec.lang = lang;
     rec.continuous = true;
     rec.interimResults = true;

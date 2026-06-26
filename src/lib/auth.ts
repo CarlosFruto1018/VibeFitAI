@@ -5,10 +5,11 @@ import { db } from "@/lib/db/client";
 import { users, accounts, authSessions, verificationTokens } from "@/lib/db/schema";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   adapter: DrizzleAdapter(db, {
     usersTable: users,
-    accountsTable: accounts,
-    sessionsTable: authSessions,
+    accountsTable: accounts as any,
+    sessionsTable: authSessions as any,
     verificationTokensTable: verificationTokens,
   }),
   providers: [
