@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { UserContext } from "@/lib/memory/user-context";
-import { llmComplete, getProvider } from "./llm";
+import { aiComplete, aiAvailable } from "./gateway";
 
 // ---------------------------------------------------------------------------
 // Output schema
@@ -43,14 +43,12 @@ export async function extractWorkoutData(
   input: string,
   userCtx: UserContext
 ): Promise<ExtractedWorkout> {
-  const provider = getProvider();
-
-  if (provider === "local") {
+  if (!aiAvailable()) {
     return extractWorkoutLocal(input);
   }
 
   const systemPrompt = buildSystemPrompt(userCtx);
-  const text = await llmComplete(systemPrompt, input);
+  const text = await aiComplete(systemPrompt, input);
 
   const jsonMatch = text.match(/```json\n?([\s\S]*?)\n?```/) ?? text.match(/(\{[\s\S]*\})/);
   const raw = jsonMatch ? jsonMatch[1] : text;

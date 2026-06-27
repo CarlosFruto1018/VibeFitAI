@@ -1,12 +1,5 @@
-import { GoogleGenAI } from "@google/genai";
 import { z } from "zod";
-
-const MODELS_TO_TRY = [
-  "gemini-3.5-flash",
-  "gemini-3.1-flash-lite",
-  "gemini-flash-latest",
-  "gemini-3.1-pro-preview",
-];
+import { aiVision, aiAvailable } from "./gateway";
 
 export const VisionExtractionSchema = z.object({
   image_type: z.enum([
@@ -54,8 +47,7 @@ export async function extractFromImage(
   imageBase64: string,
   mimeType: string
 ): Promise<VisionExtraction> {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
+  if (!aiAvailable()) {
     return {
       image_type: "other",
       exercises: [],
@@ -65,15 +57,7 @@ export async function extractFromImage(
     };
   }
 
-  const ai = new GoogleGenAI({
-    apiKey,
-    httpOptions: { headers: { "User-Agent": "aistudio-build" } },
-  });
-
-  const parts = [
-    { inlineData: { mimeType, data: imageBase64 } },
-    {
-      text: `Analiza esta imagen de entrenamiento físico y extrae información estructurada.
+  const prompt = `Analiza esta imagen de entrenamiento físico y extrae información estructurada.
 Identifica el tipo de imagen y extrae todos los datos visibles (pesos, series, repeticiones, tiempo, distancia, calorías, ritmo cardíaco, velocidad).
 Si es una pantalla de máquina cardio, reloj inteligente o hoja de entrenamiento, lee todos los números visibles.
 Si es una foto de discos/barras, estima el peso total si es posible.
@@ -85,35 +69,31 @@ Devuelve SOLO JSON válido con este esquema:
   "session_metrics": {"duration_min":n|null,"calories":n|null,"heart_rate_avg":n|null,"heart_rate_max":n|null,"distance_m":n|null,"speed_kmh":n|null},
   "description": "descripción breve de lo que se ve",
   "confidence": "high"|"medium"|"low"
-}`,
-    },
-  ];
+}`;
 
-  let lastError: unknown = null;
-  for (const modelName of MODELS_TO_TRY) {
-    try {
-      const res = await ai.models.generateContent({
-        model: modelName,
-        contents: { parts },
-        config: { temperature: 0.1 },
-      });
-      if (res?.text) {
-        const jsonMatch = res.text.match(/```json\n?([\s\S]*?)\n?```/) ?? res.text.match(/(\{[\s\S]*\})/);
-        const raw = jsonMatch ? jsonMatch[1] : res.text;
-        return VisionExtractionSchema.parse(JSON.parse(raw));
-      }
-    } catch (err) {
-      console.warn(`Model ${modelName} failed for vision, trying next...`, err);
-      lastError = err;
-    }
+  const text = await aiVision(imageBase64, mimeType, prompt);
+
+  if (!text) {
+    return {
+      image_type: "other",
+      exercises: [],
+      session_metrics: {},
+      description: "No se pudo extraer información estructurada",
+      confidence: "low",
+    };
   }
 
-  console.error("All Gemini models failed for vision extraction:", lastError);
-  return {
-    image_type: "other",
-    exercises: [],
-    session_metrics: {},
-    description: "No se pudo extraer información estructurada",
-    confidence: "low",
-  };
+  try {
+    const jsonMatch = text.match(/```json\n?([\s\S]*?)\n?```/) ?? text.match(/(\{[\s\S]*\})/);
+    const raw = jsonMatch ? jsonMatch[1] : text;
+    return VisionExtractionSchema.parse(JSON.parse(raw));
+  } catch {
+    return {
+      image_type: "other",
+      exercises: [],
+      session_metrics: {},
+      description: "No se pudo parsear la respuesta",
+      confidence: "low",
+    };
+  }
 }

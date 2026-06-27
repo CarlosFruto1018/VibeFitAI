@@ -3,7 +3,7 @@ import { sessions, workoutSets, exercises, personalRecords } from "@/lib/db/sche
 import { eq, desc, gte, and, inArray } from "drizzle-orm";
 import { subDays, subMonths, subWeeks } from "date-fns";
 import type { UserContext } from "@/lib/memory/user-context";
-import { llmComplete, getProvider } from "./llm";
+import { aiComplete, aiAvailable } from "./gateway";
 
 export async function answerQuery(
   query: string,
@@ -11,14 +11,12 @@ export async function answerQuery(
   ctx: UserContext
 ): Promise<string> {
   const data = await gatherQueryData(query, userId);
-  const provider = getProvider();
-
-  if (provider !== "local") {
+  if (aiAvailable()) {
     const system = `Eres un asistente de fitness que responde preguntas sobre el historial de entrenamiento del usuario.
 Responde siempre en español, de forma concisa y directa. Usa emojis con moderación.
 Perfil del usuario: ${JSON.stringify(ctx)}`;
     const user = `Pregunta: "${query}"\n\nDatos de entrenamiento disponibles:\n${JSON.stringify(data, null, 2)}`;
-    const answer = await llmComplete(system, user);
+    const answer = await aiComplete(system, user);
     if (answer) return answer;
   }
 
