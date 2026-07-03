@@ -252,21 +252,41 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* Empty state */}
+      {/* Empty state / onboarding de usuario nuevo */}
       {recentSessions.length === 0 && (
-        <div className="bg-[--color-surface-container-lowest] rounded-2xl p-10 text-center shadow-sm border border-[--color-outline-variant]">
+        <div className="bg-[--color-surface-container-lowest] rounded-2xl p-8 text-center shadow-sm border border-[--color-outline-variant]">
           <div className="w-14 h-14 rounded-2xl bg-[--color-primary-container] flex items-center justify-center mx-auto mb-4">
             <Dumbbell size={24} className="text-[--color-on-primary-container]" />
           </div>
-          <p className="text-sm font-semibold text-[--color-on-surface] mb-1">¡Empieza hoy!</p>
+          <p className="text-sm font-semibold text-[--color-on-surface] mb-1">¡Bienvenido, {firstName}!</p>
           <p className="text-xs text-[--color-on-surface-variant] mb-5">
-            Registra tu primer entrenamiento para ver tu progreso aquí.
+            Registra tu primer entrenamiento como prefieras:
           </p>
+          <div className="flex flex-col gap-2 text-left max-w-xs mx-auto mb-6">
+            <div className="flex items-start gap-2.5">
+              <span className="text-base leading-5">🎙️</span>
+              <p className="text-xs text-[--color-on-surface-variant]">
+                <span className="font-semibold text-[--color-on-surface]">Voz</span> — di lo que hiciste: «4 series de press banca con 60 kilos»
+              </p>
+            </div>
+            <div className="flex items-start gap-2.5">
+              <span className="text-base leading-5">📸</span>
+              <p className="text-xs text-[--color-on-surface-variant]">
+                <span className="font-semibold text-[--color-on-surface]">Foto</span> — a la pantalla de la máquina o tu hoja de rutina
+              </p>
+            </div>
+            <div className="flex items-start gap-2.5">
+              <span className="text-base leading-5">⌨️</span>
+              <p className="text-xs text-[--color-on-surface-variant]">
+                <span className="font-semibold text-[--color-on-surface]">Texto</span> — escríbelo como lo dirías, la IA lo entiende
+              </p>
+            </div>
+          </div>
           <Link
             href="/record"
             className="inline-flex items-center gap-1.5 bg-[--color-primary] text-[--color-on-primary] text-sm font-semibold px-5 py-2.5 rounded-full hover:opacity-90 transition-opacity"
           >
-            + Registrar entrenamiento
+            + Registrar mi primer entrenamiento
           </Link>
         </div>
       )}

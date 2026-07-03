@@ -2,6 +2,7 @@
 
 import { formatDate, formatDuration, formatWeight } from "@/lib/utils";
 import type { Session, WorkoutSet, Exercise } from "@/lib/db/schema";
+import { Card } from "@/components/ui/Card";
 import { Dumbbell, Clock, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
@@ -26,7 +27,7 @@ export function SessionCard({ session }: SessionCardProps) {
 
   return (
     <Link href={`/session/${session.id}`} className="block group">
-      <div className="bg-white border border-slate-100 rounded-2xl p-4 flex flex-col gap-3 transition-all hover:shadow-md hover:shadow-slate-200/60 hover:border-slate-200">
+      <Card className="p-4 flex flex-col gap-3 transition-all hover:shadow-md hover:shadow-slate-200/60 hover:border-slate-200">
         {/* Header */}
         <div className="flex items-start justify-between">
           <div>
@@ -73,7 +74,7 @@ export function SessionCard({ session }: SessionCardProps) {
             {session.summaryText}
           </p>
         )}
-      </div>
+      </Card>
     </Link>
   );
 }

@@ -5,6 +5,8 @@ import { eq, asc } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Dumbbell, Hash, Weight, FileText } from "lucide-react";
 import { LocalDate } from "@/components/ui/LocalDate";
+import { Card } from "@/components/ui/Card";
+import { EditableSet } from "@/components/session/EditableSet";
 import Link from "next/link";
 
 export default async function SessionDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -67,7 +69,7 @@ export default async function SessionDetailPage({ params }: { params: Promise<{ 
       {/* Exercises */}
       <div className="flex flex-col gap-3">
         {Object.entries(byExercise).map(([name, sets]) => (
-          <div key={name} className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm shadow-slate-200/50">
+          <Card key={name} className="overflow-hidden">
             {/* Exercise header */}
             <div className="flex items-center gap-2.5 px-4 py-3 border-b border-slate-50">
               <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
@@ -80,47 +82,37 @@ export default async function SessionDetailPage({ params }: { params: Promise<{ 
             </div>
 
             {/* Sets table header */}
-            <div className="grid grid-cols-4 px-4 py-2 bg-slate-50/50">
+            <div className="grid grid-cols-[2rem_1fr_1fr_1fr_4.5rem] px-4 py-2 bg-slate-50/50 gap-1">
               <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wide flex items-center gap-1">
-                <Hash size={9} /> Serie
+                <Hash size={9} />
               </span>
               <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">Reps</span>
               <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wide flex items-center gap-1">
                 <Weight size={9} /> Peso
               </span>
               <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">RPE</span>
+              <span />
             </div>
 
             {/* Sets */}
             <div className="divide-y divide-slate-50">
               {sets.map((s, i) => (
-                <div key={s.id} className="grid grid-cols-4 px-4 py-2.5 items-center">
-                  <span className="text-sm font-medium text-slate-400">{i + 1}</span>
-                  <span className="text-sm text-slate-700">
-                    {s.reps ? `${s.reps}` : s.durationSec ? `${Math.round(s.durationSec / 60)}min` : "—"}
-                  </span>
-                  <span className="text-sm font-semibold text-slate-900">
-                    {s.weightKg ? `${s.weightKg} kg` : s.distanceM ? `${s.distanceM}m` : "—"}
-                  </span>
-                  <span className="text-xs text-slate-400">
-                    {s.rpe ? `${s.rpe}/10` : "—"}
-                  </span>
-                </div>
+                <EditableSet key={s.id} set={s} index={i} />
               ))}
             </div>
-          </div>
+          </Card>
         ))}
       </div>
 
       {/* Summary */}
       {session.summaryText && (
-        <div className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm shadow-slate-200/50">
+        <Card className="p-4">
           <div className="flex items-center gap-2 mb-2">
             <FileText size={14} className="text-slate-400" />
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Resumen</p>
           </div>
           <p className="text-sm text-slate-700 leading-relaxed">{session.summaryText}</p>
-        </div>
+        </Card>
       )}
     </div>
   );
@@ -128,9 +120,9 @@ export default async function SessionDetailPage({ params }: { params: Promise<{ 
 
 function StatCard({ value, label }: { value: string; label: string }) {
   return (
-    <div className="bg-white border border-slate-100 rounded-2xl p-3 text-center shadow-sm shadow-slate-200/50">
+    <Card className="p-3 text-center">
       <p className="text-lg font-black text-slate-900 leading-none">{value}</p>
       <p className="text-[11px] text-slate-400 mt-1">{label}</p>
-    </div>
+    </Card>
   );
 }

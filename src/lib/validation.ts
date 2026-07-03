@@ -13,3 +13,17 @@ export const SessionPatchSchema = z
   });
 
 export type SessionPatch = z.infer<typeof SessionPatchSchema>;
+
+export const SetPatchSchema = z
+  .object({
+    reps: z.number().int().min(0).max(1000).nullable().optional(),
+    weightKg: z.number().min(0).max(2000).nullable().optional(),
+    durationSec: z.number().int().min(0).max(86400).nullable().optional(),
+    distanceM: z.number().min(0).max(1000000).nullable().optional(),
+    rpe: z.number().min(1).max(10).nullable().optional(),
+  })
+  .refine((d) => Object.keys(d).length > 0, {
+    message: "Debes enviar al menos un campo a modificar",
+  });
+
+export type SetPatch = z.infer<typeof SetPatchSchema>;

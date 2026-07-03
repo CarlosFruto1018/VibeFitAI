@@ -153,7 +153,11 @@ export default function ChatPage() {
 
       {/* Input */}
       <form onSubmit={handleSubmit} className="flex items-end gap-2 pt-3 shrink-0 border-t border-slate-100">
+        <label htmlFor="chat-question" className="sr-only">
+          Pregunta sobre tu historial de entrenamientos
+        </label>
         <textarea
+          id="chat-question"
           ref={inputRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -166,6 +170,7 @@ export default function ChatPage() {
         <button
           type="submit"
           disabled={loading || !input.trim()}
+          aria-label="Enviar pregunta"
           className="w-11 h-11 rounded-xl bg-slate-900 hover:bg-slate-700 flex items-center justify-center disabled:opacity-30 transition-colors shadow-sm shrink-0"
         >
           <Send size={15} className="text-white" />

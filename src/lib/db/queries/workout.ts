@@ -1,6 +1,6 @@
 import { db } from "@/lib/db/client";
 import { workoutSets, exercises, exerciseAliases, personalRecords, sessions } from "@/lib/db/schema";
-import { eq, and, desc, gt } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import type { ExtractedWorkout } from "@/lib/ai/extract-workout";
 import type { VisionExtraction } from "@/lib/ai/extract-vision";
 
@@ -144,7 +144,7 @@ async function checkAndUpdatePR(
 // ---------------------------------------------------------------------------
 // Recalculate session total volume
 // ---------------------------------------------------------------------------
-async function recalculateSessionVolume(sessionId: string) {
+export async function recalculateSessionVolume(sessionId: string) {
   const sets = await db.query.workoutSets.findMany({
     where: eq(workoutSets.sessionId, sessionId),
     columns: { weightKg: true, reps: true },

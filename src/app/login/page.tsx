@@ -160,7 +160,7 @@ export default function LoginPage() {
             {/* Connector line — desktop only */}
             <div className="hidden lg:block absolute top-8 left-[calc(16.67%+1rem)] right-[calc(16.67%+1rem)] h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent" />
 
-            {STEPS.map((s, i) => (
+            {STEPS.map((s) => (
               <div key={s.num} className="relative flex flex-col items-center lg:items-start text-center lg:text-left">
                 <div className="w-16 h-16 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center mb-5 relative z-10">
                   <span className="text-2xl font-black text-slate-600">{s.num}</span>

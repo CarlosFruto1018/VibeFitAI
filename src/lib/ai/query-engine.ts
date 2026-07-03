@@ -1,7 +1,7 @@
 import { db } from "@/lib/db/client";
-import { sessions, workoutSets, exercises, personalRecords } from "@/lib/db/schema";
+import { sessions, workoutSets, personalRecords } from "@/lib/db/schema";
 import { eq, desc, gte, and, inArray } from "drizzle-orm";
-import { subDays, subMonths, subWeeks } from "date-fns";
+import { subMonths, subWeeks } from "date-fns";
 import type { UserContext } from "@/lib/memory/user-context";
 import { aiComplete, aiAvailable } from "./gateway";
 
@@ -36,9 +36,6 @@ async function gatherQueryData(query: string, userId: string) {
       orderBy: desc(personalRecords.achievedAt),
     });
   }
-
-  // Specific exercise history
-  const exerciseKeywords = extractExerciseKeywords(lq);
 
   // Weekly sessions count
   if (lq.includes("semana") || lq.includes("sesiones")) {
@@ -78,30 +75,22 @@ async function gatherQueryData(query: string, userId: string) {
   });
 }
 
-function extractExerciseKeywords(query: string): string[] {
-  const map: Record<string, string[]> = {
-    bench_press: ["press banca", "press plano", "banca", "bench"],
-    squat: ["sentadilla", "squat", "cuclillas"],
-    deadlift: ["peso muerto", "deadlift"],
-    pull_up: ["dominadas", "pull-up", "jalón"],
-    overhead_press: ["press militar", "hombros"],
-    treadmill: ["cinta", "trotadora", "correr", "trote"],
-    stationary_bike: ["bicicleta", "bike", "spinning"],
-    bicep_curl: ["curl", "bíceps"],
-    tricep_dip: ["fondos", "dips"],
-    hip_thrust: ["hip thrust", "cadera"],
-  };
-
-  return Object.entries(map)
-    .filter(([, aliases]) => aliases.some((a) => query.includes(a)))
-    .map(([canonical]) => canonical);
-}
-
 // ---------------------------------------------------------------------------
 // Local answer generator (no AI)
 // ---------------------------------------------------------------------------
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function answerLocal(query: string, data: any, ctx: UserContext): string {
+// Forma laxa de los resultados heterogéneos de gatherQueryData.
+interface LooseSet {
+  durationSec?: number | null;
+  weightKg?: number | null;
+  reps?: number | null;
+  exerciseName?: string | null;
+  exercise?: { displayName?: string | null } | null;
+}
+interface LooseItem extends LooseSet {
+  workoutSets?: LooseSet[];
+}
+
+function answerLocal(query: string, data: unknown, ctx: UserContext): string {
   const lq = query.toLowerCase();
 
   // No data
@@ -111,12 +100,13 @@ function answerLocal(query: string, data: any, ctx: UserContext): string {
 
   // Personal records
   if (lq.includes("récord") || lq.includes("record") || lq.includes("mejor") || lq.includes("máximo") || lq.includes("pr")) {
-    const prs = Array.isArray(data) ? data : [];
+    const prs = Array.isArray(data)
+      ? (data as Array<LooseItem & { value?: number; metric?: string }>)
+      : [];
     if (prs.length === 0) return "Aún no tienes récords registrados.";
     const lines = prs
       .slice(0, 5)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .map((pr: any) => `• ${pr.exercise?.displayName ?? "Ejercicio"}: ${pr.value} ${pr.metric === "weight_kg" ? "kg" : pr.metric}`)
+      .map((pr) => `• ${pr.exercise?.displayName ?? "Ejercicio"}: ${pr.value} ${pr.metric === "weight_kg" ? "kg" : pr.metric}`)
       .join("\n");
     return `🏆 Tus récords personales:\n${lines}`;
   }
@@ -127,18 +117,22 @@ function answerLocal(query: string, data: any, ctx: UserContext): string {
     return `📅 Tienes ${count} sesión${count !== 1 ? "es" : ""} registrada${count !== 1 ? "s" : ""} esta semana.`;
   }
 
+  const items: LooseItem[] = Array.isArray(data) ? (data as LooseItem[]) : [];
+
+  const flattenSets = () => {
+    const allSets: LooseSet[] = [];
+    for (const item of items) {
+      if (item.workoutSets) allSets.push(...item.workoutSets);
+      else if (item.durationSec != null || item.weightKg != null) allSets.push(item);
+    }
+    return allSets;
+  };
+
   // Duration / cardio questions
   if (lq.includes("minuto") || lq.includes("tiempo") || lq.includes("duración") || lq.includes("hora")) {
-    const allSets: any[] = [];
-    if (Array.isArray(data)) {
-      for (const item of data) {
-        if (item.workoutSets) allSets.push(...item.workoutSets);
-        else if (item.durationSec != null) allSets.push(item);
-      }
-    }
-    const withDuration = allSets.filter((s: any) => s.durationSec);
+    const withDuration = flattenSets().filter((s) => s.durationSec);
     if (withDuration.length === 0) return "No encontré registros con duración. Prueba registrar tiempo en tus ejercicios de cardio.";
-    const totalSec = withDuration.reduce((acc: number, s: any) => acc + (s.durationSec ?? 0), 0);
+    const totalSec = withDuration.reduce((acc, s) => acc + (s.durationSec ?? 0), 0);
     const totalMin = Math.round(totalSec / 60);
     const exerciseName = withDuration[0]?.exercise?.displayName ?? withDuration[0]?.exerciseName ?? "cardio";
     return `⏱️ Llevas ${totalMin} minuto${totalMin !== 1 ? "s" : ""} en total de ${exerciseName} en los últimos registros.`;
@@ -146,24 +140,20 @@ function answerLocal(query: string, data: any, ctx: UserContext): string {
 
   // Weight / strength questions
   if (lq.includes("kg") || lq.includes("kilo") || lq.includes("levant") || lq.includes("peso")) {
-    const allSets: any[] = [];
-    if (Array.isArray(data)) {
-      for (const item of data) {
-        if (item.workoutSets) allSets.push(...item.workoutSets);
-        else if (item.weightKg != null) allSets.push(item);
-      }
-    }
-    const withWeight = allSets.filter((s: any) => s.weightKg);
+    const withWeight = flattenSets().filter((s) => s.weightKg);
     if (withWeight.length === 0) return "No encontré registros con peso para esa consulta.";
-    const maxSet = withWeight.reduce((best: any, s: any) => (!best || s.weightKg > best.weightKg ? s : best), null);
+    const maxSet = withWeight.reduce<LooseSet | null>(
+      (best, s) => (!best || (s.weightKg ?? 0) > (best.weightKg ?? 0) ? s : best),
+      null
+    );
     const exerciseName = maxSet?.exercise?.displayName ?? maxSet?.exerciseName ?? "ejercicio";
-    return `💪 El máximo que registré fue ${maxSet.weightKg} kg en ${exerciseName}${maxSet.reps ? ` (${maxSet.reps} reps)` : ""}.`;
+    return `💪 El máximo que registré fue ${maxSet?.weightKg} kg en ${exerciseName}${maxSet?.reps ? ` (${maxSet.reps} reps)` : ""}.`;
   }
 
   // Generic: summarize sessions
-  if (Array.isArray(data) && data[0]?.workoutSets !== undefined) {
-    const totalSets = data.reduce((acc: number, s: any) => acc + (s.workoutSets?.length ?? 0), 0);
-    return `📊 Últimas ${data.length} sesiones con ${totalSets} series en total.\nEjercicios frecuentes: ${ctx.frequentExercises.slice(0, 3).join(", ") || "ninguno aún"}.`;
+  if (items[0]?.workoutSets !== undefined) {
+    const totalSets = items.reduce((acc, s) => acc + (s.workoutSets?.length ?? 0), 0);
+    return `📊 Últimas ${items.length} sesiones con ${totalSets} series en total.\nEjercicios frecuentes: ${ctx.frequentExercises.slice(0, 3).join(", ") || "ninguno aún"}.`;
   }
 
   return "No tengo suficientes datos para responder esa pregunta con precisión. Sigue registrando tus entrenamientos 💪";

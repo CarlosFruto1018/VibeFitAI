@@ -4,8 +4,9 @@ import { sessions, workoutSets, personalRecords } from "@/lib/db/schema";
 import { eq, desc, gte, and, inArray } from "drizzle-orm";
 import { subMonths } from "date-fns";
 import { LoadChart } from "@/components/progress/LoadChart";
+import { Card } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { TrendingUp, Trophy, Dumbbell } from "lucide-react";
-import Link from "next/link";
 
 export default async function ProgressPage() {
   const session = await auth();
@@ -79,7 +80,7 @@ export default async function ProgressPage() {
 
       {/* PRs */}
       {prs.length > 0 && (
-        <section className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm shadow-slate-200/50">
+        <Card className="overflow-hidden">
           <div className="flex items-center gap-2 px-4 pt-4 pb-2">
             <Trophy size={14} className="text-yellow-500" />
             <h2 className="text-sm font-semibold text-slate-900">Récords personales</h2>
@@ -95,7 +96,7 @@ export default async function ProgressPage() {
               </div>
             ))}
           </div>
-        </section>
+        </Card>
       )}
 
       {/* Charts */}
@@ -107,27 +108,19 @@ export default async function ProgressPage() {
         {charts.length > 0 ? (
           <div className="flex flex-col gap-3">
             {charts.slice(0, 6).map((e) => (
-              <div key={e.name} className="bg-white border border-slate-100 rounded-2xl p-4 shadow-sm shadow-slate-200/50">
+              <Card key={e.name} className="p-4">
                 <LoadChart data={e.data} exerciseName={e.name} />
-              </div>
+              </Card>
             ))}
           </div>
         ) : (
-          <div className="bg-white border border-slate-100 rounded-2xl p-10 text-center shadow-sm">
-            <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
-              <Dumbbell size={24} className="text-slate-400" />
-            </div>
-            <p className="text-sm font-semibold text-slate-900 mb-1">Sin datos aún</p>
-            <p className="text-xs text-slate-400 mb-5">
-              Registra el mismo ejercicio en al menos 2 sesiones para ver tu progresión.
-            </p>
-            <Link
-              href="/record"
-              className="inline-flex items-center gap-1.5 bg-emerald-500 text-white text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-emerald-400 transition-colors"
-            >
-              + Registrar entrenamiento
-            </Link>
-          </div>
+          <EmptyState
+            icon={<Dumbbell size={24} className="text-slate-400" />}
+            title="Sin datos aún"
+            description="Registra el mismo ejercicio en al menos 2 sesiones para ver tu progresión."
+            actionHref="/record"
+            actionLabel="+ Registrar entrenamiento"
+          />
         )}
       </section>
     </div>

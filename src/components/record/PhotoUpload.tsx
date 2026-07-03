@@ -1,15 +1,16 @@
 "use client";
 
 import { useRef, useState } from "react";
-import { Camera, X, ImagePlus } from "lucide-react";
+import { Camera, X, ImagePlus, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PhotoUploadProps {
   onSelected: (file: File) => void;
   disabled?: boolean;
+  uploading?: boolean;
 }
 
-export function PhotoUpload({ onSelected, disabled }: PhotoUploadProps) {
+export function PhotoUpload({ onSelected, disabled, uploading }: PhotoUploadProps) {
   const [preview, setPreview] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -30,16 +31,29 @@ export function PhotoUpload({ onSelected, disabled }: PhotoUploadProps) {
     <div className="flex flex-col gap-4 w-full">
       {preview ? (
         <div className="relative w-full rounded-2xl overflow-hidden border border-slate-200 shadow-sm">
-          <img src={preview} alt="Preview" className="w-full h-56 object-cover" />
+          {/* eslint-disable-next-line @next/next/no-img-element -- preview local (object URL), next/image no aplica */}
+          <img
+            src={preview}
+            alt="Foto de tu entrenamiento pendiente de análisis"
+            className="w-full h-56 object-cover"
+          />
           <button
             onClick={handleClear}
-            className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full w-8 h-8 flex items-center justify-center shadow-sm hover:bg-white transition-colors"
+            disabled={uploading}
+            className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full w-10 h-10 flex items-center justify-center shadow-sm hover:bg-white transition-colors disabled:opacity-50"
             aria-label="Eliminar foto"
           >
-            <X size={14} className="text-slate-700" />
+            <X size={16} className="text-slate-700" />
           </button>
           <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/40 to-transparent p-3">
-            <p className="text-white text-xs font-medium">FitAI analizará esta imagen</p>
+            {uploading ? (
+              <p className="text-white text-xs font-medium flex items-center gap-1.5">
+                <Loader2 size={12} className="animate-spin" />
+                Subiendo y analizando...
+              </p>
+            ) : (
+              <p className="text-white text-xs font-medium">FitAI analizará esta imagen</p>
+            )}
           </div>
         </div>
       ) : (
