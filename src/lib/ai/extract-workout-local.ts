@@ -75,7 +75,7 @@ const NUM = String.raw`(\d+(?:[.,]\d+)?)`;
 const SET_REP_RE = new RegExp(String.raw`${NUM}\s*[x×]\s*${NUM}`, "gi");
 // "3 series de 10", "3 series 10 reps"
 const SERIES_REPS_RE = new RegExp(
-  String.raw`${NUM}\s*series?\s*(de\s*)?${NUM}\s*(rep(?:eticiones?)?|reps?)?`,
+  String.raw`${NUM}\s*series?\s*(?:de\s*)?${NUM}\s*(?:rep(?:eticiones?)?|reps?)?`,
   "gi"
 );
 // "10 repeticiones"
