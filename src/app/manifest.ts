@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Registra tus entrenamientos con voz, fotos y texto. IA que entiende tu progreso.",
     start_url: "/dashboard",
     display: "standalone",
-    background_color: "#09090b",
-    theme_color: "#4f46e5",
+    background_color: "#ffffff",
+    theme_color: "#10b981",
     orientation: "portrait",
     categories: ["fitness", "health", "sports"],
     icons: [

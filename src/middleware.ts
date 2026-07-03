@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/login", "/register", "/api/auth"];
+const PUBLIC_PATHS = ["/login", "/register", "/api/auth", "/offline"];
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
@@ -20,5 +20,5 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|icons|manifest.json|sw.js).*)"],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|icons|manifest.json|manifest.webmanifest|sw.js).*)"],
 };

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Geist } from "next/font/google";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -21,7 +22,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#494bd6",
+  themeColor: "#10b981",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -31,7 +32,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
-      <body className={`${inter.variable} ${geist.variable} font-sans bg-background text-on-background antialiased`}>{children}</body>
+      <body className={`${inter.variable} ${geist.variable} font-sans bg-background text-on-background antialiased`}>
+        <ServiceWorkerRegister />
+        {children}
+      </body>
     </html>
   );
 }
