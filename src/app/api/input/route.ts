@@ -7,6 +7,8 @@ import { getOrCreateSession } from "@/lib/ai/session-grouper";
 import { getUserContext } from "@/lib/memory/user-context";
 import { extractWorkoutData } from "@/lib/ai/extract-workout";
 import { saveWorkoutSets } from "@/lib/db/queries/workout";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { logger } from "@/lib/logger";
 import { z } from "zod";
 
 const qstashAvailable =
@@ -48,6 +50,10 @@ export async function POST(req: NextRequest) {
     }
 
     const userId = session.user.id;
+
+    const rl = await checkRateLimit(userId, "input", 20);
+    if (!rl.allowed) return rateLimitResponse(rl.retryAfterSec);
+
     const body = await req.json();
     const parsed = InputSchema.safeParse(body);
 
@@ -125,8 +131,10 @@ export async function POST(req: NextRequest) {
       status: "queued",
     });
   } catch (err) {
-    console.error("[POST /api/input]", err);
-    const message = err instanceof Error ? err.message : "Error desconocido";
-    return NextResponse.json({ error: message }, { status: 500 });
+    logger.error("POST /api/input", "Error al procesar el registro", err);
+    return NextResponse.json(
+      { error: "No pudimos procesar tu registro. Intenta de nuevo." },
+      { status: 500 }
+    );
   }
 }
