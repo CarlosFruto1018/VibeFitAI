@@ -24,6 +24,7 @@ async function tryModels<T>(
   if (!ai) return null;
 
   let lastError: unknown = null;
+
   for (const model of MODELS) {
     try {
       const result = await fn(ai, model);
@@ -33,6 +34,7 @@ async function tryModels<T>(
       lastError = err;
     }
   }
+
   if (lastError) console.error("[gateway] All models failed:", lastError);
   return null;
 }

@@ -40,16 +40,17 @@ export default async function ProgressPage() {
     const byExercise: Record<string, { name: string; byDate: Record<string, { weightKg: number; reps: number }> }> = {};
 
     for (const s of sets) {
-      if (!s.exerciseId || !s.weightKg) continue;
-      const name = s.exercise?.displayName ?? s.exerciseName ?? s.exerciseId;
+      if (!s.weightKg) continue;
+      const name = s.exercise?.displayName ?? s.exerciseName ?? "Ejercicio";
+      const key = s.exerciseId ?? `name:${name.toLowerCase().trim()}`;
       const date = sessionDateMap[s.sessionId]?.toISOString().split("T")[0];
       if (!date) continue;
 
-      if (!byExercise[s.exerciseId]) byExercise[s.exerciseId] = { name, byDate: {} };
+      if (!byExercise[key]) byExercise[key] = { name, byDate: {} };
 
-      const existing = byExercise[s.exerciseId].byDate[date];
+      const existing = byExercise[key].byDate[date];
       if (!existing || s.weightKg > existing.weightKg) {
-        byExercise[s.exerciseId].byDate[date] = { weightKg: s.weightKg, reps: s.reps ?? 0 };
+        byExercise[key].byDate[date] = { weightKg: s.weightKg, reps: s.reps ?? 0 };
       }
     }
 

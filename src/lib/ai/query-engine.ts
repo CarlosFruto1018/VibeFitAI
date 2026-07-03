@@ -11,6 +11,7 @@ export async function answerQuery(
   ctx: UserContext
 ): Promise<string> {
   const data = await gatherQueryData(query, userId);
+
   if (aiAvailable()) {
     const system = `Eres un asistente de fitness que responde preguntas sobre el historial de entrenamiento del usuario.
 Responde siempre en español, de forma concisa y directa. Usa emojis con moderación.
@@ -127,7 +128,6 @@ function answerLocal(query: string, data: any, ctx: UserContext): string {
 
   // Duration / cardio questions
   if (lq.includes("minuto") || lq.includes("tiempo") || lq.includes("duración") || lq.includes("hora")) {
-    // Look through sessions for sets with duration
     const allSets: any[] = [];
     if (Array.isArray(data)) {
       for (const item of data) {
