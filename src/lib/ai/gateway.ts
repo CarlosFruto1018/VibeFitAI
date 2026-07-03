@@ -1,4 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
+import { logger } from "@/lib/logger";
 
 const MODELS = [
   "gemini-3.5-flash",
@@ -30,12 +31,12 @@ async function tryModels<T>(
       const result = await fn(ai, model);
       if (result !== null) return result;
     } catch (err) {
-      console.warn(`[gateway] ${model} failed, trying next...`, err);
+      logger.warn("gateway", `Modelo ${model} falló, probando el siguiente`, err);
       lastError = err;
     }
   }
 
-  if (lastError) console.error("[gateway] All models failed:", lastError);
+  if (lastError) logger.error("gateway", "Todos los modelos fallaron", lastError);
   return null;
 }
 

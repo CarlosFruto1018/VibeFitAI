@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { createPresignedUploadUrl } from "@/lib/storage";
+import { logger } from "@/lib/logger";
 import { z } from "zod";
 
 const PresignSchema = z.object({
@@ -39,8 +40,10 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ uploadUrl, storageKey: key, publicUrl });
   } catch (err) {
-    console.error("[GET /api/input/presign]", err);
-    const message = err instanceof Error ? err.message : "Error desconocido";
-    return NextResponse.json({ error: message }, { status: 500 });
+    logger.error("GET /api/input/presign", "Error al generar URL de subida", err);
+    return NextResponse.json(
+      { error: "No pudimos preparar la subida del archivo. Intenta de nuevo." },
+      { status: 500 }
+    );
   }
 }

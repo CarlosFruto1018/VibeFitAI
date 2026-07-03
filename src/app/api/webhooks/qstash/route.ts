@@ -8,7 +8,22 @@ import { extractWorkoutData } from "@/lib/ai/extract-workout";
 import { extractFromImage } from "@/lib/ai/extract-vision";
 import { getUserContext, invalidateUserContext } from "@/lib/memory/user-context";
 import { saveWorkoutSets, saveVisionWorkoutSets } from "@/lib/db/queries/workout";
+import { logger } from "@/lib/logger";
 import { z } from "zod";
+
+// Descarga de R2 con verificación de estado y un reintento simple.
+async function fetchStorageObject(url: string): Promise<Buffer> {
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const res = await fetch(url);
+    if (res.ok) return Buffer.from(await res.arrayBuffer());
+    logger.warn("qstash-webhook", `Descarga de R2 falló (HTTP ${res.status}), intento ${attempt}/2`, { url });
+    if (attempt === 2) {
+      throw new Error(`No se pudo descargar el archivo de R2 (HTTP ${res.status})`);
+    }
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+  throw new Error("unreachable");
+}
 
 const JobSchema = z.object({
   rawInputId: z.string().uuid(),
@@ -35,7 +50,7 @@ async function handler(req: NextRequest) {
 
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error("[qstash-webhook] Processing error:", err);
+    logger.error("qstash-webhook", "Error procesando el job", err);
 
     await db
       .update(rawInputs)
@@ -48,8 +63,7 @@ async function handler(req: NextRequest) {
 
 async function processAudio(job: z.infer<typeof JobSchema>) {
   // Fetch audio from R2
-  const audioRes = await fetch(job.storageUrl);
-  const buffer = Buffer.from(await audioRes.arrayBuffer());
+  const buffer = await fetchStorageObject(job.storageUrl);
 
   // STT via Whisper
   const transcription = await transcribeAudio(buffer, job.mimeType);
@@ -70,8 +84,7 @@ async function processAudio(job: z.infer<typeof JobSchema>) {
 
 async function processImage(job: z.infer<typeof JobSchema>) {
   // Fetch image from R2 and convert to base64
-  const imgRes = await fetch(job.storageUrl);
-  const buffer = Buffer.from(await imgRes.arrayBuffer());
+  const buffer = await fetchStorageObject(job.storageUrl);
   const base64 = buffer.toString("base64");
 
   const extracted = await extractFromImage(base64, job.mimeType);

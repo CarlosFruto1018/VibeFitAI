@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import { logger } from "@/lib/logger";
 
 type RecorderState = "idle" | "recording" | "processing";
 
@@ -49,7 +50,7 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
       }, 1000);
     } catch (err) {
       setError("No se pudo acceder al micrófono. Verifica los permisos.");
-      console.error(err);
+      logger.error("useAudioRecorder", "getUserMedia falló", err);
     }
   }, []);
 

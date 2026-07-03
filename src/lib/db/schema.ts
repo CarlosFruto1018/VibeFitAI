@@ -152,21 +152,25 @@ export const workoutSets = pgTable(
 // ---------------------------------------------------------------------------
 // Raw Inputs (audio / image / text before processing)
 // ---------------------------------------------------------------------------
-export const rawInputs = pgTable("raw_inputs", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  type: text("type").notNull(), // audio | image | text
-  storageUrl: text("storage_url"),    // R2 URL
-  mimeType: text("mime_type"),
-  transcription: text("transcription"),
-  extractedJson: jsonb("extracted_json"),
-  sessionId: uuid("session_id").references(() => sessions.id),
-  processedAt: timestamp("processed_at"),
-  processingError: text("processing_error"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
+export const rawInputs = pgTable(
+  "raw_inputs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: text("type").notNull(), // audio | image | text
+    storageUrl: text("storage_url"),    // R2 URL
+    mimeType: text("mime_type"),
+    transcription: text("transcription"),
+    extractedJson: jsonb("extracted_json"),
+    sessionId: uuid("session_id").references(() => sessions.id),
+    processedAt: timestamp("processed_at"),
+    processingError: text("processing_error"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [index("raw_input_user_idx").on(t.userId), index("raw_input_session_idx").on(t.sessionId)]
+);
 
 // ---------------------------------------------------------------------------
 // Personal Records
