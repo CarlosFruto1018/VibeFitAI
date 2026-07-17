@@ -52,6 +52,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   session: { strategy: "jwt" },
+  logger: {
+    // El único síntoma visible de un fallo en el callback OAuth es
+    // "error=Configuration" — sin esto, la causa real nunca llega a los logs.
+    error(error: Error) {
+      const cause = (error as { cause?: { err?: Error } }).cause?.err;
+      console.error("[auth][error]", error.name, error.message, cause ? `| causa: ${cause.name}: ${cause.message}` : "");
+    },
+  },
   callbacks: {
     session({ session, token }) {
       if (token.sub) session.user.id = token.sub;
