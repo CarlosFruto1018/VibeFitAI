@@ -32,7 +32,14 @@ const FEATURES = [
 ];
 
 export default async function LandingPage() {
-  const session = await auth();
+  // auth() aquí solo redirige usuarios ya logueados; si falla (p. ej. env
+  // mal configurada) la landing debe seguir sirviéndose, no dar 500.
+  let session = null;
+  try {
+    session = await auth();
+  } catch (err) {
+    console.error("landing: auth() falló", err);
+  }
   if (session?.user) redirect("/dashboard");
 
   return (

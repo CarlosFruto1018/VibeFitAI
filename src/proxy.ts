@@ -1,7 +1,16 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-const PUBLIC_PATHS = ["/login", "/register", "/restablecer", "/privacidad", "/terminos", "/api/auth", "/offline"];
+const PUBLIC_PATHS = [
+  "/login",
+  "/register",
+  "/restablecer",
+  "/privacidad",
+  "/terminos",
+  "/api/auth",
+  "/api/debug", // diagnóstico temporal del 500 en producción
+  "/offline",
+];
 
 // Next.js 16 renombró `middleware.ts` a `proxy.ts` (runtime Node.js por defecto).
 //
