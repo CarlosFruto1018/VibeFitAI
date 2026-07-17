@@ -8,7 +8,6 @@ const PUBLIC_PATHS = [
   "/privacidad",
   "/terminos",
   "/api/auth",
-  "/api/debug", // diagnóstico temporal del 500 en producción
   "/offline",
 ];
 
