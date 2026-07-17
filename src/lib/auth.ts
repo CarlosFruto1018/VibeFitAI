@@ -7,6 +7,13 @@ import { db } from "@/lib/db/client";
 import { users, accounts, authSessions, verificationTokens } from "@/lib/db/schema";
 import { verifyPassword } from "@/lib/password";
 
+// Sanear AUTH_URL antes de que NextAuth la parsee: un valor sin esquema
+// (p. ej. "vibefitai.vercel.app") lanza TypeError: Invalid URL en cada
+// request y tumba todo el flujo de auth en producción.
+if (process.env.AUTH_URL && !/^https?:\/\//.test(process.env.AUTH_URL)) {
+  process.env.AUTH_URL = `https://${process.env.AUTH_URL}`;
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: DrizzleAdapter(db, {
     usersTable: users,
