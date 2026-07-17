@@ -1,57 +1,83 @@
 import { NextResponse } from "next/server";
-import { createHash } from "crypto";
 
-// Endpoint de diagnóstico TEMPORAL v2 — prueba desde dentro de producción:
-// 1) si las credenciales de Google que tiene Vercel son válidas (token
-//    endpoint distingue invalid_client de invalid_grant), y
-// 2) si la base de datos acepta lecturas.
-// Solo expone longitudes y hashes truncados, nunca valores. Eliminar al acabar.
+// Diagnóstico TEMPORAL v3 — ejecuta las MISMAS operaciones de escritura que
+// hace el adapter de NextAuth durante el callback de Google (createUser,
+// getUserByAccount, linkAccount) con datos de prueba, y limpia al final.
+// Eliminar cuando el login funcione.
 
-const fp = (v: string | undefined) =>
-  v ? { len: v.length, sha8: createHash("sha256").update(v).digest("hex").slice(0, 8) } : null;
+const TEST_EMAIL = "debug-test@vibefitai.local";
 
 export async function GET() {
-  const fingerprints = {
-    AUTH_GOOGLE_ID: fp(process.env.AUTH_GOOGLE_ID),
-    AUTH_GOOGLE_SECRET: fp(process.env.AUTH_GOOGLE_SECRET),
-    AUTH_SECRET: fp(process.env.AUTH_SECRET),
-    DATABASE_URL: fp(process.env.DATABASE_URL),
-  };
+  const steps: Record<string, string> = {};
 
-  // Prueba real contra Google con las credenciales del entorno de Vercel.
-  let googleTest = "sin probar";
   try {
-    const res = await fetch("https://oauth2.googleapis.com/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        client_id: process.env.AUTH_GOOGLE_ID ?? "",
-        client_secret: process.env.AUTH_GOOGLE_SECRET ?? "",
-        grant_type: "authorization_code",
-        code: "dummy-code-test",
-        redirect_uri: "https://vibefitai.vercel.app/api/auth/callback/google",
-      }),
-    });
-    const j = (await res.json()) as { error?: string };
-    googleTest =
-      j.error === "invalid_grant"
-        ? "CREDENCIALES OK"
-        : j.error === "invalid_client"
-          ? "CREDENCIALES INVÁLIDAS"
-          : `respuesta inesperada: ${j.error}`;
-  } catch (err) {
-    googleTest = `fetch falló: ${err instanceof Error ? err.message : String(err)}`;
-  }
-
-  // Prueba de lectura de DB por la misma vía que usa el adapter.
-  let dbTest = "sin probar";
-  try {
+    const { DrizzleAdapter } = await import("@auth/drizzle-adapter");
     const { db } = await import("@/lib/db/client");
-    await db.query.users.findFirst();
-    dbTest = "LECTURA OK";
+    const { users, accounts, authSessions, verificationTokens } = await import("@/lib/db/schema");
+    const { eq } = await import("drizzle-orm");
+
+    const adapter = DrizzleAdapter(db, {
+      usersTable: users,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      accountsTable: accounts as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      sessionsTable: authSessions as any,
+      verificationTokensTable: verificationTokens,
+    });
+
+    // Limpieza previa por si quedó basura de una ejecución anterior.
+    await db.delete(users).where(eq(users.email, TEST_EMAIL));
+
+    let userId: string | undefined;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const created = await (adapter.createUser as any)({
+        id: crypto.randomUUID(),
+        email: TEST_EMAIL,
+        emailVerified: null,
+        name: "debug",
+        image: null,
+      });
+      userId = created?.id;
+      steps.createUser = `OK (id: ${String(userId).slice(0, 8)}…)`;
+    } catch (err) {
+      steps.createUser = `FALLÓ: ${err instanceof Error ? `${err.name}: ${err.message}` : String(err)}`;
+    }
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (adapter.getUserByAccount as any)({ provider: "debug", providerAccountId: "debug-123" });
+      steps.getUserByAccount = "OK";
+    } catch (err) {
+      steps.getUserByAccount = `FALLÓ: ${err instanceof Error ? `${err.name}: ${err.message}` : String(err)}`;
+    }
+
+    if (userId) {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (adapter.linkAccount as any)({
+          userId,
+          type: "oidc",
+          provider: "debug",
+          providerAccountId: "debug-123",
+          access_token: "test",
+          expires_at: 1234567890,
+          token_type: "bearer",
+          scope: "openid",
+          id_token: "test",
+        });
+        steps.linkAccount = "OK";
+      } catch (err) {
+        steps.linkAccount = `FALLÓ: ${err instanceof Error ? `${err.name}: ${err.message}` : String(err)}`;
+      }
+    }
+
+    // Limpieza (accounts cae en cascada con el usuario).
+    await db.delete(users).where(eq(users.email, TEST_EMAIL));
+    steps.cleanup = "OK";
   } catch (err) {
-    dbTest = `falló: ${err instanceof Error ? err.message : String(err)}`;
+    steps.setup = `FALLÓ: ${err instanceof Error ? `${err.name}: ${err.message}` : String(err)}`;
   }
 
-  return NextResponse.json({ fingerprints, googleTest, dbTest });
+  return NextResponse.json(steps);
 }
