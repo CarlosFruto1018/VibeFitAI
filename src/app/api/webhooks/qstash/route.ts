@@ -12,7 +12,13 @@ import { logger } from "@/lib/logger";
 import { z } from "zod";
 
 // Descarga de R2 con verificación de estado y un reintento simple.
+// Solo se aceptan URLs de nuestro bucket: defensa en profundidad contra SSRF
+// aunque el job llegue firmado por QStash.
 async function fetchStorageObject(url: string): Promise<Buffer> {
+  const base = process.env.R2_PUBLIC_URL;
+  if (!base || !url.startsWith(`${base}/`)) {
+    throw new Error("storageUrl fuera del bucket permitido");
+  }
   for (let attempt = 1; attempt <= 2; attempt++) {
     const res = await fetch(url);
     if (res.ok) return Buffer.from(await res.arrayBuffer());

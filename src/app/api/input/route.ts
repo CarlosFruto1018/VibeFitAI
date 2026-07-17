@@ -8,6 +8,7 @@ import { getUserContext } from "@/lib/memory/user-context";
 import { extractWorkoutData } from "@/lib/ai/extract-workout";
 import { saveWorkoutSets } from "@/lib/db/queries/workout";
 import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { uploadExtensionFor, isOwnedStorageKey } from "@/lib/validation";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
 
@@ -24,19 +25,19 @@ const InputSchema = z.discriminatedUnion("type", [
     locationLat: z.number().optional(),
     locationLon: z.number().optional(),
   }),
+  // La URL de descarga NUNCA viene del cliente: se reconstruye server-side
+  // a partir de la storageKey (validada) para evitar SSRF en el webhook.
   z.object({
     type: z.literal("audio"),
-    storageKey: z.string(),
-    storageUrl: z.string().url(),
-    mimeType: z.string(),
+    storageKey: z.string().min(1).max(300),
+    mimeType: z.string().min(1).max(100),
     locationLat: z.number().optional(),
     locationLon: z.number().optional(),
   }),
   z.object({
     type: z.literal("image"),
-    storageKey: z.string(),
-    storageUrl: z.string().url(),
-    mimeType: z.string(),
+    storageKey: z.string().min(1).max(300),
+    mimeType: z.string().min(1).max(100),
     locationLat: z.number().optional(),
     locationLon: z.number().optional(),
   }),
@@ -64,11 +65,23 @@ export async function POST(req: NextRequest) {
     const input = parsed.data;
 
     // Audio/image require R2 + QStash — reject early if not configured
-    if (input.type !== "text" && (!r2Available || !qstashAvailable)) {
-      return NextResponse.json(
-        { error: "Almacenamiento (R2) y cola (QStash) no están configurados. Solo texto disponible por ahora." },
-        { status: 503 }
-      );
+    let storageUrl: string | undefined;
+    if (input.type !== "text") {
+      if (!r2Available || !qstashAvailable) {
+        return NextResponse.json(
+          { error: "Almacenamiento (R2) y cola (QStash) no están configurados. Solo texto disponible por ahora." },
+          { status: 503 }
+        );
+      }
+      // La key debe ser del propio usuario y del tipo declarado, y el MIME
+      // debe estar en la allowlist (misma que el presign).
+      if (
+        !isOwnedStorageKey(input.storageKey, userId, input.type) ||
+        uploadExtensionFor(input.type, input.mimeType) === null
+      ) {
+        return NextResponse.json({ error: "Archivo no válido" }, { status: 400 });
+      }
+      storageUrl = `${process.env.R2_PUBLIC_URL}/${input.storageKey}`;
     }
 
     const trainingSessionId = await getOrCreateSession(userId, {
@@ -81,7 +94,7 @@ export async function POST(req: NextRequest) {
       .values({
         userId,
         type: input.type,
-        storageUrl: input.type !== "text" ? input.storageUrl : undefined,
+        storageUrl,
         mimeType: input.type !== "text" ? input.mimeType : "text/plain",
         transcription: input.type === "text" ? input.content : undefined,
         sessionId: trainingSessionId,
@@ -120,7 +133,7 @@ export async function POST(req: NextRequest) {
         userId,
         sessionId: trainingSessionId,
         type: input.type,
-        storageUrl: input.storageUrl,
+        storageUrl,
         mimeType: input.mimeType,
       },
     });

@@ -21,6 +21,8 @@ export const users = pgTable("users", {
   image: text("image"),
   timezone: text("timezone").default("UTC"),
   emailVerified: timestamp("email_verified"),
+  // Hash scrypt para login con correo/contraseña; null si solo usa Google.
+  passwordHash: text("password_hash"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 

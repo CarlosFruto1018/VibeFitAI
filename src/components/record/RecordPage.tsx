@@ -3,12 +3,11 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { AudioRecorder } from "./AudioRecorder";
 import { PhotoUpload } from "./PhotoUpload";
-import { Mic, Type, Camera, Sparkles, Loader2 } from "lucide-react";
+import { Mic, Camera, Sparkles, Loader2, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/Input";
-import { Button } from "@/components/ui/Button";
 
-type Tab = "text" | "audio" | "photo";
+type Capture = "audio" | "photo" | null;
 
 interface ExtractedExercise {
   alias: string;
@@ -26,17 +25,11 @@ interface RecordPageProps {
   onResult?: (result: RecordResult) => void;
 }
 
-const TABS: { id: Tab; label: string; icon: React.ReactNode }[] = [
-  { id: "text", label: "Texto", icon: <Type size={14} /> },
-  { id: "audio", label: "Voz", icon: <Mic size={14} /> },
-  { id: "photo", label: "Foto", icon: <Camera size={14} /> },
-];
-
 const POLL_INTERVAL_MS = 3000;
 const POLL_MAX_ATTEMPTS = 20; // ~1 minuto
 
 export function RecordPage({ onResult }: RecordPageProps) {
-  const [tab, setTab] = useState<Tab>("text");
+  const [capture, setCapture] = useState<Capture>(null);
   const [textInput, setTextInput] = useState("");
   const [isPending, startTransition] = useTransition();
   const [isUploading, setIsUploading] = useState(false);
@@ -160,11 +153,11 @@ export function RecordPage({ onResult }: RecordPageProps) {
     setResult(null);
     setIsUploading(true);
     try {
-      const { storageKey, publicUrl: storageUrl } = await uploadMedia(file, "image");
+      const { storageKey } = await uploadMedia(file, "image");
       const res = await fetch("/api/input", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "image", storageUrl, storageKey, mimeType: file.type }),
+        body: JSON.stringify({ type: "image", storageKey, mimeType: file.type }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
@@ -180,50 +173,87 @@ export function RecordPage({ onResult }: RecordPageProps) {
     }
   }
 
+  function toggleCapture(next: Exclude<Capture, null>) {
+    setCapture((c) => (c === next ? null : next));
+    setResult(null);
+    setError(null);
+  }
+
   const detectedExercises = result?.extracted?.exercises ?? [];
 
   return (
-    <div className="flex flex-col gap-5">
-      {/* Tab selector */}
-      <div className="flex items-center gap-1 bg-slate-100 rounded-2xl p-1" role="tablist">
-        {TABS.map((t) => (
-          <button
-            key={t.id}
-            role="tab"
-            aria-selected={tab === t.id}
-            onClick={() => { setTab(t.id); setResult(null); setError(null); }}
-            className={cn(
-              "flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-medium transition-all duration-150",
-              tab === t.id
-                ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-700"
-            )}
-          >
-            {t.icon}
-            {t.label}
-          </button>
-        ))}
-      </div>
+    <div className="flex flex-col gap-6">
+      {/* Captura rápida — bento de dos tarjetas, como el diseño de Stitch */}
+      <section className="grid grid-cols-2 gap-4">
+        <button
+          type="button"
+          aria-pressed={capture === "audio"}
+          onClick={() => toggleCapture("audio")}
+          className={cn(
+            "bg-white border rounded-2xl p-5 flex flex-col items-center justify-center gap-3 shadow-card transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+            capture === "audio" ? "border-accent ring-1 ring-accent" : "border-outline-variant/50 hover:border-accent/40"
+          )}
+        >
+          <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
+            <Mic size={20} className="text-white" />
+          </div>
+          <div className="text-center">
+            <p className="text-sm font-semibold text-on-surface">Grabar Audio</p>
+            <p className="text-[11px] text-on-surface-variant mt-0.5">VibeFitAI transcribe tu rutina</p>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          aria-pressed={capture === "photo"}
+          onClick={() => toggleCapture("photo")}
+          className={cn(
+            "bg-white border rounded-2xl p-5 flex flex-col items-center justify-center gap-3 shadow-card transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+            capture === "photo" ? "border-accent ring-1 ring-accent" : "border-outline-variant/50 hover:border-accent/40"
+          )}
+        >
+          <div className="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center">
+            <Camera size={20} className="text-on-primary-container" />
+          </div>
+          <div className="text-center">
+            <p className="text-sm font-semibold text-on-surface">Foto del Tablero</p>
+            <p className="text-[11px] text-on-surface-variant mt-0.5">Escanear resultados</p>
+          </div>
+        </button>
+      </section>
+
+      {/* Panel de captura activo */}
+      {capture === "audio" && (
+        <div className="bg-white border border-outline-variant/50 rounded-2xl p-6 shadow-card animate-fade-in">
+          <AudioRecorder onRecorded={handleAudio} disabled={busy} />
+        </div>
+      )}
+      {capture === "photo" && (
+        <div className="animate-fade-in">
+          <PhotoUpload onSelected={handlePhoto} disabled={busy} uploading={isUploading} />
+        </div>
+      )}
 
       {/* Procesamiento en background (audio/imagen en QStash) */}
       {processing && (
-        <div className="bg-sky-50 border border-sky-100 rounded-2xl px-4 py-3 flex items-center gap-3 animate-fade-in">
-          <Loader2 size={16} className="text-sky-500 animate-spin shrink-0" />
+        <div className="bg-primary-container/60 border border-primary-container rounded-2xl px-4 py-3 flex items-center gap-3 animate-fade-in">
+          <Loader2 size={16} className="text-accent animate-spin shrink-0" />
           <div>
-            <p className="text-sm font-medium text-sky-700">Procesando tu entrenamiento...</p>
-            <p className="text-xs text-sky-500 mt-0.5">La IA está analizando tu archivo. Suele tardar unos segundos.</p>
+            <p className="text-sm font-medium text-on-primary-container">Procesando tu entrenamiento...</p>
+            <p className="text-xs text-on-primary-container/70 mt-0.5">La IA está analizando tu archivo. Suele tardar unos segundos.</p>
           </div>
         </div>
       )}
 
-      {/* Detected exercises */}
+      {/* Ejercicios detectados — tarjeta navy tipo «Sugerencia IA» */}
       {detectedExercises.length > 0 && (
-        <div className="bg-emerald-50 border border-emerald-100 rounded-2xl px-4 py-3 animate-fade-in">
-          <p className="text-xs font-semibold text-emerald-700 flex items-center gap-1.5 mb-2.5">
+        <div className="relative overflow-hidden bg-primary rounded-2xl p-5 animate-fade-in shadow-lg shadow-primary/15">
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-accent/30 blur-3xl rounded-full" />
+          <p className="relative text-xs font-semibold text-inverse-primary uppercase tracking-widest flex items-center gap-1.5 mb-3">
             <Sparkles size={12} />
-            FitAI detectó
+            VibeFitAI detectó
           </p>
-          <div className="flex flex-col gap-2">
+          <div className="relative flex flex-col gap-2">
             {detectedExercises.map((ex, i) => {
               const setCount = ex.sets.length;
               const firstSet = ex.sets[0];
@@ -234,8 +264,8 @@ export function RecordPage({ onResult }: RecordPageProps) {
               ].filter(Boolean).join(" · ");
               return (
                 <div key={i} className="flex items-center justify-between">
-                  <span className="text-sm text-slate-800 font-medium">{ex.alias}</span>
-                  <span className="text-sm text-slate-500">{summary}</span>
+                  <span className="text-sm text-white font-medium">{ex.alias}</span>
+                  <span className="text-sm font-mono text-inverse-primary">{summary}</span>
                 </div>
               );
             })}
@@ -244,39 +274,40 @@ export function RecordPage({ onResult }: RecordPageProps) {
       )}
 
       {error && (
-        <div className="bg-red-50 border border-red-100 rounded-2xl px-4 py-3 animate-fade-in">
-          <p className="text-sm text-red-600">{error}</p>
+        <div className="bg-error-container/60 border border-error-container rounded-2xl px-4 py-3 animate-fade-in">
+          <p className="text-sm text-error">{error}</p>
         </div>
       )}
 
-      {/* Tab content (keyed para la transición de entrada) */}
-      <div key={tab} className="animate-fade-in">
-        {tab === "text" && (
-          <form onSubmit={handleText} className="flex flex-col gap-4">
-            <Textarea
-              label="Describe tu entrenamiento"
-              value={textInput}
-              onChange={(e) => setTextInput(e.target.value)}
-              placeholder="Hice 4 series de press banca con 60 kg, luego 3 de sentadilla a 80 y cardio 15 min..."
-              rows={5}
-              disabled={busy}
-            />
-            <Button type="submit" disabled={busy || !textInput.trim()} className="w-full py-3.5">
-              {isPending ? "Guardando..." : "Guardar entrenamiento"}
-            </Button>
-          </form>
-        )}
-
-        {tab === "audio" && (
-          <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
-            <AudioRecorder onRecorded={handleAudio} disabled={busy} />
-          </div>
-        )}
-
-        {tab === "photo" && (
-          <PhotoUpload onSelected={handlePhoto} disabled={busy} uploading={isUploading} />
-        )}
-      </div>
+      {/* Entrada Manual */}
+      <form onSubmit={handleText} className="flex flex-col gap-3">
+        <span className="text-xs font-medium text-on-surface-variant ml-1">Entrada Manual</span>
+        <Textarea
+          label="Describe tu entrenamiento"
+          value={textInput}
+          onChange={(e) => setTextInput(e.target.value)}
+          placeholder="Ej: 3 series de 10 reps Press de Banca 60kg..."
+          rows={4}
+          disabled={busy}
+        />
+        <button
+          type="submit"
+          disabled={busy || !textInput.trim()}
+          className="w-full h-12 bg-primary hover:bg-primary/90 text-on-primary rounded-full text-sm font-semibold flex items-center justify-center gap-2 shadow-sm shadow-primary/15 transition-all active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+        >
+          {isPending ? (
+            <>
+              <Loader2 size={17} className="animate-spin" />
+              Guardando...
+            </>
+          ) : (
+            <>
+              <CheckCircle size={17} />
+              Registrar
+            </>
+          )}
+        </button>
+      </form>
     </div>
   );
 }

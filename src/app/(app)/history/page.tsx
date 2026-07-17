@@ -25,7 +25,7 @@ export default async function HistoryPage() {
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center">
-          <History size={16} className="text-emerald-400" />
+          <History size={16} className="text-inverse-primary" />
         </div>
         <div>
           <h1 className="text-xl font-black text-slate-900">Historial</h1>

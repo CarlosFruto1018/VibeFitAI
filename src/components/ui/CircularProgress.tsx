@@ -20,9 +20,10 @@ export function CircularProgress({
   const offset = circumference - (Math.min(progress, 100) / 100) * circumference;
   const center = size / 2;
 
-  const trackColor = variant === "dark" ? "rgba(255,255,255,0.12)" : "rgba(0,0,0,0.07)";
-  const textColor = variant === "dark" ? "text-white" : "text-slate-900";
-  const subColor = variant === "dark" ? "text-white/60" : "text-slate-400";
+  const trackColor = variant === "dark" ? "rgba(255,255,255,0.12)" : "rgba(19,27,46,0.08)";
+  const strokeColor = variant === "dark" ? "#bec6e0" : "#4648d4";
+  const textColor = variant === "dark" ? "text-white" : "text-on-surface";
+  const subColor = variant === "dark" ? "text-white/60" : "text-on-surface-variant";
 
   return (
     <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
@@ -33,7 +34,7 @@ export function CircularProgress({
           cy={center}
           r={radius}
           fill="none"
-          stroke="#10b981"
+          stroke={strokeColor}
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}

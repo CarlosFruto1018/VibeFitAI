@@ -70,7 +70,7 @@ export default async function ProgressPage() {
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center">
-          <TrendingUp size={16} className="text-emerald-400" />
+          <TrendingUp size={16} className="text-inverse-primary" />
         </div>
         <div>
           <h1 className="text-xl font-black text-slate-900">Progreso</h1>
@@ -89,7 +89,7 @@ export default async function ProgressPage() {
             {prs.map((pr) => (
               <div key={pr.id} className="flex items-center justify-between px-4 py-3">
                 <p className="text-sm text-slate-700">{pr.exercise?.displayName}</p>
-                <p className="text-sm font-black text-emerald-600">
+                <p className="text-sm font-black font-mono text-accent">
                   {pr.value}
                   {pr.metric === "weight_kg" ? " kg" : ` ${pr.metric}`}
                 </p>

@@ -5,6 +5,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { nanoid } from "nanoid";
+import { uploadExtensionFor } from "@/lib/validation";
 
 const client = new S3Client({
   region: "auto",
@@ -25,7 +26,8 @@ export async function createPresignedUploadUrl(
   type: UploadType,
   mimeType: string
 ): Promise<{ uploadUrl: string; key: string; publicUrl: string }> {
-  const ext = mimeType.split("/")[1]?.split(";")[0] ?? "bin";
+  const ext = uploadExtensionFor(type, mimeType);
+  if (!ext) throw new Error(`MIME no permitido para subida: ${mimeType}`);
   const key = `${userId}/${type}/${Date.now()}-${nanoid(8)}.${ext}`;
 
   const command = new PutObjectCommand({

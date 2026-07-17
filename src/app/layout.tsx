@@ -1,19 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Geist } from "next/font/google";
+import { Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import "./globals.css";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-const geist = Geist({ subsets: ["latin"], variable: "--font-geist" });
+const hanken = Hanken_Grotesk({ subsets: ["latin"], variable: "--font-hanken", display: "swap" });
+const jetbrains = JetBrains_Mono({ subsets: ["latin"], weight: ["500"], variable: "--font-jetbrains", display: "swap" });
 
 export const metadata: Metadata = {
-  title: "FitAI",
+  title: "VibeFitAI",
   description: "Registra y analiza tus entrenamientos con inteligencia artificial",
-  applicationName: "FitAI",
+  applicationName: "VibeFitAI",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "FitAI",
+    title: "VibeFitAI",
   },
 };
 
@@ -22,7 +22,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#10b981",
+  themeColor: "#131b2e",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -32,7 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
-      <body className={`${inter.variable} ${geist.variable} font-sans bg-background text-on-background antialiased`}>
+      <body className={`${hanken.variable} ${jetbrains.variable} font-sans bg-background text-on-background antialiased`}>
         <ServiceWorkerRegister />
         {children}
       </body>

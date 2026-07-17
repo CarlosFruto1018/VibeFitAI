@@ -5,14 +5,15 @@ type Variant = "primary" | "secondary" | "destructive";
 
 const VARIANTS: Record<Variant, string> = {
   primary:
-    "bg-emerald-500 hover:bg-emerald-400 text-white shadow-sm shadow-emerald-200",
+    "bg-primary hover:bg-primary/90 text-on-primary shadow-sm shadow-primary/15 focus-visible:ring-accent",
   secondary:
-    "bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-sm",
-  destructive: "bg-red-500 hover:bg-red-400 text-white shadow-sm shadow-red-200",
+    "bg-white hover:bg-surface-container-low text-on-surface border border-outline-variant shadow-sm focus-visible:ring-accent",
+  destructive:
+    "bg-error hover:bg-error/90 text-on-error shadow-sm shadow-error/20 focus-visible:ring-error",
 };
 
 const BASE =
-  "inline-flex items-center justify-center gap-1.5 rounded-2xl font-semibold text-sm py-3 px-4 transition-colors disabled:opacity-40 disabled:pointer-events-none";
+  "inline-flex items-center justify-center gap-1.5 rounded-2xl font-semibold text-sm py-3 px-4 transition-all duration-200 active:scale-[0.98] disabled:opacity-40 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background";
 
 export function buttonClasses(variant: Variant = "primary", className?: string) {
   return cn(BASE, VARIANTS[variant], className);

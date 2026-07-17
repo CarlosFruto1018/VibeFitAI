@@ -37,7 +37,7 @@ export function LoadChart({ data, exerciseName }: LoadChartProps) {
     <div className="w-full">
       <div className="flex items-center justify-between mb-3">
         <p className="text-sm font-semibold text-slate-900">{exerciseName}</p>
-        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${pct >= 0 ? "bg-emerald-50 text-emerald-700" : "bg-red-50 text-red-600"}`}>
+        <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${pct >= 0 ? "bg-primary-container text-on-primary-container" : "bg-error-container/60 text-error"}`}>
           {pct >= 0 ? "+" : ""}{pct}%
         </span>
       </div>
@@ -55,10 +55,10 @@ export function LoadChart({ data, exerciseName }: LoadChartProps) {
           <Line
             type="monotone"
             dataKey="weightKg"
-            stroke="#10b981"
+            stroke="#4648d4"
             strokeWidth={2}
-            dot={{ fill: "#10b981", r: 3, strokeWidth: 0 }}
-            activeDot={{ r: 5, fill: "#10b981", strokeWidth: 0 }}
+            dot={{ fill: "#4648d4", r: 3, strokeWidth: 0 }}
+            activeDot={{ r: 5, fill: "#4648d4", strokeWidth: 0 }}
           />
         </LineChart>
       </ResponsiveContainer>

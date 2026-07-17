@@ -1,8 +1,8 @@
-// Service worker mínimo de FitAI.
+// Service worker mínimo de VibeFitAI.
 // Estrategia: red primero para navegación (con fallback offline),
 // caché primero para estáticos de Next e íconos.
 
-const CACHE = "fitai-v1";
+const CACHE = "vibefitai-v1";
 const OFFLINE_URL = "/offline";
 const PRECACHE = [OFFLINE_URL, "/icons/icon-192.png", "/icons/icon-512.png"];
 

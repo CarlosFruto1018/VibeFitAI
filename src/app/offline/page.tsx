@@ -1,4 +1,4 @@
-export const metadata = { title: "Sin conexión — FitAI" };
+export const metadata = { title: "Sin conexión — VibeFitAI" };
 
 export default function OfflinePage() {
   return (

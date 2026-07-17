@@ -1,4 +1,4 @@
-# FitAI — Entrena con inteligencia
+# VibeFitAI — Entrena con inteligencia
 
 PWA móvil para registrar y consultar entrenamientos de gimnasio **hablando, con una foto o por texto**, en español. La IA extrae los datos estructurados (ejercicio, series, reps, peso, duración, distancia) y los guarda automáticamente en tu historial.
 

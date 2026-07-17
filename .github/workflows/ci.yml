@@ -29,6 +29,6 @@ jobs:
         run: npm run build
         env:
           # Valores dummy: el build no necesita servicios reales.
-          DATABASE_URL: postgres://user:pass@localhost:5432/fitai
+          DATABASE_URL: postgres://user:pass@localhost:5432/vibefitai
           AUTH_SECRET: ci-dummy-secret
           NEXT_PUBLIC_APP_URL: http://localhost:3000

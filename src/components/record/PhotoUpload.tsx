@@ -52,7 +52,7 @@ export function PhotoUpload({ onSelected, disabled, uploading }: PhotoUploadProp
                 Subiendo y analizando...
               </p>
             ) : (
-              <p className="text-white text-xs font-medium">FitAI analizará esta imagen</p>
+              <p className="text-white text-xs font-medium">VibeFitAI analizará esta imagen</p>
             )}
           </div>
         </div>
@@ -62,8 +62,8 @@ export function PhotoUpload({ onSelected, disabled, uploading }: PhotoUploadProp
           onClick={() => inputRef.current?.click()}
           disabled={disabled}
           className={cn(
-            "w-full h-48 rounded-2xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-3 transition-all",
-            "hover:border-emerald-300 hover:bg-emerald-50/50",
+            "w-full h-48 rounded-2xl border-2 border-dashed border-outline-variant flex flex-col items-center justify-center gap-3 transition-all",
+            "hover:border-accent/50 hover:bg-accent-container/25",
             disabled && "opacity-40 cursor-not-allowed"
           )}
         >
@@ -74,7 +74,7 @@ export function PhotoUpload({ onSelected, disabled, uploading }: PhotoUploadProp
             <p className="text-sm font-medium text-slate-700">Sube una foto</p>
             <p className="text-xs text-slate-400 mt-0.5">Pizarra, máquina o nota del gym</p>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-medium bg-emerald-50 px-3 py-1.5 rounded-full">
+          <div className="flex items-center gap-1.5 text-xs text-on-primary-container font-medium bg-primary-container px-3 py-1.5 rounded-full">
             <ImagePlus size={12} />
             Cámara o galería
           </div>

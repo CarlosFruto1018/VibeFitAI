@@ -15,6 +15,13 @@
       "when": 1783057002885,
       "tag": "0001_orange_secret_warriors",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783914188252,
+      "tag": "0002_add-password-hash",
+      "breakpoints": true
     }
   ]
 }

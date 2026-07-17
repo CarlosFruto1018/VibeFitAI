@@ -66,27 +66,35 @@ export function SettingsClient({ profile, signOutAction }: Props) {
 
   return (
     <div className="flex flex-col gap-4">
+      <h3 className="text-[10px] font-mono font-semibold text-on-surface-variant uppercase tracking-widest px-1 -mb-1">
+        Ajustes de Cuenta
+      </h3>
       {/* Preferences */}
-      <section className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm shadow-slate-200/50">
-        <div className="flex items-center gap-2 px-4 pt-4 pb-3 border-b border-slate-50">
-          <Sliders size={14} className="text-slate-400" />
-          <h2 className="text-sm font-semibold text-slate-900">Preferencias</h2>
+      <section className="bg-white border border-outline-variant/70 rounded-2xl overflow-hidden shadow-card">
+        <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-outline-variant/40">
+          <div className="w-9 h-9 rounded-xl bg-primary-container/50 flex items-center justify-center">
+            <Sliders size={15} className="text-on-primary-container" />
+          </div>
+          <div>
+            <h2 className="text-sm font-semibold text-on-surface">Preferencias de Entrenamiento</h2>
+            <p className="text-[11px] text-on-surface-variant">Nivel, unidades y peso corporal</p>
+          </div>
         </div>
 
         <div className="flex flex-col gap-5 p-4">
           {/* Fitness level */}
           <div className="flex flex-col gap-2">
-            <label className="text-xs font-medium text-slate-500">Nivel de fitness</label>
+            <label className="text-xs font-medium text-on-surface-variant">Nivel de fitness</label>
             <div className="flex gap-1.5">
               {FITNESS_LEVELS.map((level) => (
                 <button
                   key={level.id}
                   onClick={() => setFitnessLevel(level.id)}
                   className={cn(
-                    "flex-1 py-2.5 rounded-xl text-xs font-medium transition-all",
+                    "flex-1 py-2.5 rounded-xl text-xs font-medium transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
                     fitnessLevel === level.id
-                      ? "bg-slate-900 text-white shadow-sm"
-                      : "bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                      ? "bg-primary text-white shadow-sm"
+                      : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container hover:text-on-surface"
                   )}
                 >
                   {level.label}
@@ -97,17 +105,17 @@ export function SettingsClient({ profile, signOutAction }: Props) {
 
           {/* Units */}
           <div className="flex flex-col gap-2">
-            <label className="text-xs font-medium text-slate-500">Unidades de peso</label>
+            <label className="text-xs font-medium text-on-surface-variant">Unidades de peso</label>
             <div className="flex gap-1.5">
               {(["kg", "lb"] as const).map((unit) => (
                 <button
                   key={unit}
                   onClick={() => setPreferredUnits(unit)}
                   className={cn(
-                    "flex-1 py-2.5 rounded-xl text-xs font-medium transition-all",
+                    "flex-1 py-2.5 rounded-xl text-xs font-medium transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
                     preferredUnits === unit
-                      ? "bg-slate-900 text-white shadow-sm"
-                      : "bg-slate-50 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+                      ? "bg-primary text-white shadow-sm"
+                      : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container hover:text-on-surface"
                   )}
                 >
                   {unit.toUpperCase()}
@@ -118,7 +126,7 @@ export function SettingsClient({ profile, signOutAction }: Props) {
 
           {/* Body weight */}
           <div className="flex flex-col gap-2">
-            <label className="text-xs font-medium text-slate-500 flex items-center gap-1.5">
+            <label className="text-xs font-medium text-on-surface-variant flex items-center gap-1.5">
               <Scale size={12} />
               Peso corporal ({preferredUnits})
             </label>
@@ -127,7 +135,7 @@ export function SettingsClient({ profile, signOutAction }: Props) {
               value={bodyWeight}
               onChange={(e) => setBodyWeight(e.target.value)}
               placeholder="Ej: 75"
-              className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:border-transparent"
+              className="bg-surface-container-low border border-outline-variant rounded-xl px-3 py-2.5 text-sm text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
             />
           </div>
 
@@ -135,7 +143,7 @@ export function SettingsClient({ profile, signOutAction }: Props) {
           <button
             onClick={handleSave}
             disabled={saving}
-            className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-semibold transition-colors disabled:opacity-40 shadow-sm shadow-emerald-200"
+            className="w-full py-3 rounded-xl bg-primary hover:bg-primary/90 text-white text-sm font-semibold transition-all duration-200 active:scale-[0.98] disabled:opacity-40 shadow-sm shadow-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
           >
             {saving ? "Guardando..." : "Guardar cambios"}
           </button>
@@ -143,7 +151,7 @@ export function SettingsClient({ profile, signOutAction }: Props) {
           {saveStatus && (
             <div className={cn(
               "flex items-center justify-center gap-2 text-sm rounded-xl py-2",
-              saveStatus === "ok" ? "text-emerald-700 bg-emerald-50" : "text-red-600 bg-red-50"
+              saveStatus === "ok" ? "text-on-primary-container bg-primary-container/70" : "text-error bg-error-container/60"
             )}>
               {saveStatus === "ok"
                 ? <><CheckCircle size={14} /> Cambios guardados</>
@@ -158,21 +166,21 @@ export function SettingsClient({ profile, signOutAction }: Props) {
       <form action={signOutAction}>
         <button
           type="submit"
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-white border border-slate-200 hover:border-slate-300 text-slate-700 text-sm font-medium transition-colors shadow-sm"
+          className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-error-container/70 hover:bg-error-container text-error text-sm font-semibold transition-colors active:scale-[0.98]"
         >
-          <LogOut size={15} className="text-slate-400" />
+          <LogOut size={15} />
           Cerrar sesión
         </button>
       </form>
 
       {/* Danger zone */}
-      <section className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
-        <div className="flex items-center gap-2 px-4 pt-4 pb-3 border-b border-slate-50">
-          <Trash2 size={14} className="text-slate-400" />
-          <h2 className="text-sm font-semibold text-slate-700">Eliminar cuenta</h2>
+      <section className="bg-white border border-outline-variant/70 rounded-2xl overflow-hidden shadow-card">
+        <div className="flex items-center gap-2 px-4 pt-4 pb-3 border-b border-outline-variant/40">
+          <Trash2 size={14} className="text-on-surface-variant" />
+          <h2 className="text-sm font-semibold text-on-surface">Eliminar cuenta</h2>
         </div>
         <div className="p-4 flex flex-col gap-3">
-          <p className="text-xs text-slate-500 leading-relaxed">
+          <p className="text-xs text-on-surface-variant leading-relaxed">
             Esto borra permanentemente tu cuenta y todos tus datos: sesiones, series, récords y perfil.
             Esta acción no se puede deshacer.
           </p>

@@ -7,7 +7,7 @@ import { Button } from "./Button";
 export function PageLoading() {
   return (
     <div className="flex flex-col items-center justify-center gap-3 py-24" role="status" aria-label="Cargando">
-      <div className="w-8 h-8 rounded-full border-[3px] border-slate-200 border-t-emerald-500 animate-spin" />
+      <div className="w-8 h-8 rounded-full border-[3px] border-surface-container-highest border-t-accent animate-spin" />
       <p className="text-xs text-slate-400">Cargando...</p>
     </div>
   );

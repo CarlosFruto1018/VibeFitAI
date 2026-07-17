@@ -72,7 +72,7 @@ export function EditableSet({ set, index }: EditableSetProps) {
           value={reps}
           onChange={(e) => setReps(e.target.value)}
           aria-label="Repeticiones"
-          className="w-full max-w-16 rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+          className="w-full max-w-16 rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-accent"
         />
         <input
           type="number"
@@ -81,7 +81,7 @@ export function EditableSet({ set, index }: EditableSetProps) {
           value={weight}
           onChange={(e) => setWeight(e.target.value)}
           aria-label="Peso en kg"
-          className="w-full max-w-20 rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+          className="w-full max-w-20 rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-accent"
         />
         <input
           type="number"
@@ -91,16 +91,16 @@ export function EditableSet({ set, index }: EditableSetProps) {
           value={rpe}
           onChange={(e) => setRpe(e.target.value)}
           aria-label="RPE (1 a 10)"
-          className="w-full max-w-14 rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+          className="w-full max-w-14 rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-accent"
         />
         <div className="flex items-center gap-1 justify-end">
           <button
             onClick={save}
             disabled={busy}
             aria-label="Guardar cambios"
-            className="w-8 h-8 rounded-lg bg-emerald-50 hover:bg-emerald-100 flex items-center justify-center transition-colors disabled:opacity-50"
+            className="w-8 h-8 rounded-lg bg-primary-container hover:bg-primary-container/70 flex items-center justify-center transition-colors disabled:opacity-50"
           >
-            {busy ? <Loader2 size={13} className="text-emerald-600 animate-spin" /> : <Check size={13} className="text-emerald-600" />}
+            {busy ? <Loader2 size={13} className="text-on-primary-container animate-spin" /> : <Check size={13} className="text-on-primary-container" />}
           </button>
           <button
             onClick={() => setEditing(false)}

@@ -1,13 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { createPresignedUploadUrl } from "@/lib/storage";
+import { uploadExtensionFor } from "@/lib/validation";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
 
-const PresignSchema = z.object({
-  type: z.enum(["audio", "image"]),
-  mimeType: z.string().min(1),
-});
+const PresignSchema = z
+  .object({
+    type: z.enum(["audio", "image"]),
+    mimeType: z.string().min(1).max(100),
+  })
+  // Solo MIME de la allowlist: el bucket es público y no debe alojar HTML/JS.
+  .refine((d) => uploadExtensionFor(d.type, d.mimeType) !== null, {
+    message: "Tipo de archivo no permitido",
+  });
 
 const r2Available =
   process.env.R2_ACCESS_KEY_ID && !process.env.R2_ACCESS_KEY_ID.includes("...");
@@ -18,6 +25,9 @@ export async function GET(req: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const rl = await checkRateLimit(session.user.id, "presign", 20);
+    if (!rl.allowed) return rateLimitResponse(rl.retryAfterSec);
 
     if (!r2Available) {
       return NextResponse.json(

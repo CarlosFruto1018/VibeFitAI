@@ -13,8 +13,8 @@ import { z } from "zod";
 const ProfileSchema = z.object({
   fitnessLevel: z.enum(["beginner", "intermediate", "advanced"]).optional(),
   preferredUnits: z.enum(["kg", "lb"]).optional(),
-  bodyWeightKg: z.number().positive().optional(),
-  goals: z.array(z.string()).optional(),
+  bodyWeightKg: z.number().positive().max(500).optional(),
+  goals: z.array(z.string().max(200)).max(20).optional(),
 });
 
 // PATCH /api/account — update profile

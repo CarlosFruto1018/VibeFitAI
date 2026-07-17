@@ -54,10 +54,10 @@ export function AudioRecorder({ onRecorded, disabled }: AudioRecorderProps) {
           onClick={handleToggle}
           disabled={disabled}
           className={cn(
-            "relative w-20 h-20 rounded-full flex items-center justify-center transition-all duration-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-emerald-400",
+            "relative w-20 h-20 rounded-full flex items-center justify-center transition-all duration-200 focus:outline-none focus-visible:ring-4 focus-visible:ring-accent",
             isRecording
-              ? "bg-red-500 shadow-lg shadow-red-300/50 scale-110"
-              : "bg-slate-900 hover:bg-slate-700 shadow-lg shadow-slate-900/20",
+              ? "bg-error shadow-lg shadow-error/30 scale-110"
+              : "bg-primary hover:bg-primary/85 shadow-lg shadow-primary/20",
             disabled && "opacity-40 cursor-not-allowed"
           )}
           aria-label={isRecording ? "Detener grabación" : isDone ? "Grabar de nuevo" : "Iniciar grabación"}
@@ -78,14 +78,14 @@ export function AudioRecorder({ onRecorded, disabled }: AudioRecorderProps) {
 
       {transcript && isDone && (
         <div className="w-full flex flex-col gap-3">
-          <div className="w-full rounded-2xl bg-slate-50 border border-slate-200 px-4 py-3 text-sm text-slate-800 leading-relaxed">
+          <div className="w-full rounded-2xl bg-surface-container-low border border-outline-variant px-4 py-3 text-sm text-on-surface leading-relaxed">
             {transcript}
           </div>
           <div className="flex gap-2">
             <button
               onClick={handleConfirm}
               disabled={disabled}
-              className="flex-1 py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-white text-sm font-semibold transition-colors disabled:opacity-40 shadow-sm shadow-emerald-200"
+              className="flex-1 py-3 rounded-2xl bg-primary hover:bg-primary/90 text-white text-sm font-semibold transition-colors disabled:opacity-40 shadow-sm shadow-primary/15"
             >
               Guardar entrenamiento
             </button>

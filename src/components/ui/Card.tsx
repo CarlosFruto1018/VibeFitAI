@@ -10,7 +10,7 @@ export function Card({
   children: React.ReactNode;
 }) {
   return (
-    <div className={cn("bg-white border border-slate-100 rounded-2xl shadow-sm shadow-slate-200/50", className)}>
+    <div className={cn("bg-white border border-outline-variant/70 rounded-2xl shadow-card", className)}>
       {children}
     </div>
   );

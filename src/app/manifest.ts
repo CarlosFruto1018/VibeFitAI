@@ -2,13 +2,13 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "FitAI — Entrena con inteligencia",
-    short_name: "FitAI",
+    name: "VibeFitAI — Entrena con inteligencia",
+    short_name: "VibeFitAI",
     description: "Registra tus entrenamientos con voz, fotos y texto. IA que entiende tu progreso.",
     start_url: "/dashboard",
     display: "standalone",
-    background_color: "#ffffff",
-    theme_color: "#10b981",
+    background_color: "#f7f9fb",
+    theme_color: "#131b2e",
     orientation: "portrait",
     categories: ["fitness", "health", "sports"],
     icons: [

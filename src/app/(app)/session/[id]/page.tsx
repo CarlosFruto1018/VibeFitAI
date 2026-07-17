@@ -49,7 +49,7 @@ export default async function SessionDetailPage({ params }: { params: Promise<{ 
       {/* Header */}
       <div className="flex items-center gap-3">
         <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center shrink-0">
-          <Dumbbell size={17} className="text-emerald-400" />
+          <Dumbbell size={17} className="text-inverse-primary" />
         </div>
         <div>
           <h1 className="text-xl font-black text-slate-900">Sesión</h1>
@@ -72,8 +72,8 @@ export default async function SessionDetailPage({ params }: { params: Promise<{ 
           <Card key={name} className="overflow-hidden">
             {/* Exercise header */}
             <div className="flex items-center gap-2.5 px-4 py-3 border-b border-slate-50">
-              <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
-                <Dumbbell size={13} className="text-emerald-600" />
+              <div className="w-7 h-7 rounded-lg bg-primary-container flex items-center justify-center">
+                <Dumbbell size={13} className="text-on-primary-container" />
               </div>
               <p className="text-sm font-semibold text-slate-900">{name}</p>
               <span className="ml-auto text-xs text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">
