@@ -31,6 +31,11 @@ const FEATURES = [
   },
 ];
 
+// La landing consulta la sesión (headers) en cada request; declararla dinámica
+// evita que Next intente prerenderizarla y que el try/catch de abajo se trague
+// el error de control "Dynamic server usage" congelándola como estática.
+export const dynamic = "force-dynamic";
+
 export default async function LandingPage() {
   // auth() aquí solo redirige usuarios ya logueados; si falla (p. ej. env
   // mal configurada) la landing debe seguir sirviéndose, no dar 500.

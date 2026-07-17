@@ -1,6 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
 
+// Mismo saneamiento que en lib/auth.ts — este runtime no importa ese módulo,
+// y un AUTH_URL sin esquema hace que getToken infiera mal el nombre de la
+// cookie segura (__Secure-authjs.session-token) y no encuentre la sesión.
+if (process.env.AUTH_URL && !/^https?:\/\//.test(process.env.AUTH_URL)) {
+  process.env.AUTH_URL = `https://${process.env.AUTH_URL}`;
+}
+
 const PUBLIC_PATHS = [
   "/login",
   "/register",
@@ -27,7 +34,13 @@ export default async function proxy(req: NextRequest) {
 
   if (isPublic || isApiWebhook) return NextResponse.next();
 
-  const token = await getToken({ req, secret: process.env.AUTH_SECRET });
+  // secureCookie explícito según el protocolo real del request: en https la
+  // cookie lleva el prefijo __Secure- y getToken debe buscarla con ese nombre.
+  const token = await getToken({
+    req,
+    secret: process.env.AUTH_SECRET,
+    secureCookie: req.nextUrl.protocol === "https:",
+  });
 
   if (!token) {
     // Las APIs responden 401 en JSON; redirigir un fetch a /login solo
