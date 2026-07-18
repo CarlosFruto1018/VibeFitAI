@@ -1,0 +1,176 @@
+"use client";
+
+import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { signIn } from "next-auth/react";
+import { Loader2, CheckCircle } from "lucide-react";
+
+const FIELD =
+  "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent disabled:opacity-50 " +
+  "dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:placeholder:text-slate-500";
+
+const CODE_FIELD =
+  "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-center text-lg font-mono font-bold tracking-[0.5em] text-slate-900 placeholder:text-slate-300 placeholder:tracking-normal placeholder:font-sans placeholder:font-normal placeholder:text-sm transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent disabled:opacity-50 " +
+  "dark:bg-slate-800 dark:border-slate-700 dark:text-white";
+
+export function ResetPasswordForm() {
+  const searchParams = useSearchParams();
+  const emailFromQuery = searchParams.get("email") ?? "";
+
+  const [email, setEmail] = useState(emailFromQuery);
+  const [code, setCode] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [resent, setResent] = useState(false);
+  const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (busy) return;
+    setError(null);
+    if (password !== confirm) {
+      setError("Las contraseñas no coinciden.");
+      return;
+    }
+    setBusy(true);
+    try {
+      const res = await fetch("/api/auth/reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim().toLowerCase(), code: code.trim(), password }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError(typeof data.error === "string" ? data.error : "No pudimos restablecer tu contraseña.");
+        return;
+      }
+      setDone(true);
+      // Entra directamente con la contraseña nueva.
+      const login = await signIn("credentials", { email, password, redirect: false });
+      if (!login?.error) window.location.href = "/dashboard";
+    } catch {
+      setError("Error de conexión. Intenta de nuevo.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function resendCode() {
+    if (busy || !email.trim()) return;
+    setError(null);
+    setResent(false);
+    setBusy(true);
+    try {
+      const res = await fetch("/api/auth/forgot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+      });
+      if (res.ok) setResent(true);
+    } catch {
+      setError("Error de conexión. Intenta de nuevo.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (done) {
+    return (
+      <div className="flex items-start gap-2 bg-primary-container/70 dark:bg-accent/10 rounded-xl px-4 py-3 text-sm text-on-primary-container dark:text-inverse-primary animate-fade-in">
+        <CheckCircle size={16} className="shrink-0 mt-0.5" />
+        <p>
+          Contraseña actualizada. Entrando a tu cuenta...{" "}
+          <Link href="/login" className="underline underline-offset-2 font-medium">
+            Ir al inicio de sesión
+          </Link>
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="w-full flex flex-col gap-3 text-left">
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Tu correo"
+        autoComplete="email"
+        required
+        disabled={busy}
+        aria-label="Correo electrónico"
+        className={FIELD}
+      />
+      <input
+        type="text"
+        inputMode="numeric"
+        pattern="\d{6}"
+        value={code}
+        onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+        placeholder="000000"
+        autoComplete="one-time-code"
+        required
+        maxLength={6}
+        disabled={busy}
+        aria-label="Código de 6 dígitos"
+        className={CODE_FIELD}
+      />
+      <input
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        placeholder="Nueva contraseña (mínimo 8 caracteres)"
+        autoComplete="new-password"
+        required
+        minLength={8}
+        disabled={busy}
+        aria-label="Nueva contraseña"
+        className={FIELD}
+      />
+      <input
+        type="password"
+        value={confirm}
+        onChange={(e) => setConfirm(e.target.value)}
+        placeholder="Repite la contraseña"
+        autoComplete="new-password"
+        required
+        minLength={8}
+        disabled={busy}
+        aria-label="Confirmar nueva contraseña"
+        className={FIELD}
+      />
+
+      {error && (
+        <p className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 rounded-xl px-3 py-2 animate-fade-in">
+          {error}
+        </p>
+      )}
+
+      {resent && !error && (
+        <p className="text-xs text-on-primary-container dark:text-inverse-primary bg-primary-container/70 dark:bg-accent/10 rounded-xl px-3 py-2 animate-fade-in">
+          Te enviamos un código nuevo.
+        </p>
+      )}
+
+      <button
+        type="submit"
+        disabled={busy}
+        className="w-full py-3 rounded-xl bg-primary hover:bg-primary/90 text-white dark:bg-white dark:text-primary dark:hover:bg-white/90 text-sm font-semibold transition-all duration-200 active:scale-[0.98] disabled:opacity-40 shadow-sm shadow-primary/15 dark:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-950"
+      >
+        {busy ? <Loader2 size={15} className="animate-spin inline" /> : "Guardar contraseña →"}
+      </button>
+
+      <button
+        type="button"
+        onClick={resendCode}
+        disabled={busy || !email.trim()}
+        className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 underline underline-offset-2 transition-colors self-center disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
+      >
+        Reenviar código
+      </button>
+    </form>
+  );
+}
