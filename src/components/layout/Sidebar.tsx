@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, TrendingUp, History, MessageCircle, User, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -20,9 +21,7 @@ export function Sidebar() {
     <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 bg-white border-r border-outline-variant/70 flex-col py-6 px-4 z-40 shadow-sm">
       {/* Logo */}
       <div className="flex items-center gap-3 px-2 mb-8">
-        <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shadow-sm shadow-primary/20">
-          <span className="text-white text-sm font-black tracking-tight">F</span>
-        </div>
+        <Image src="/icons/icon-192.png" alt="" width={36} height={36} className="rounded-xl shrink-0" />
         <div>
           <span className="text-base font-black text-on-surface tracking-tight">VibeFitAI</span>
           <p className="text-[10px] text-on-surface-variant/70 leading-none mt-0.5">Tu entrenador IA</p>

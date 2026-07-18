@@ -15,6 +15,10 @@ export const metadata: Metadata = {
     statusBarStyle: "black-translucent",
     title: "VibeFitAI",
   },
+  icons: {
+    icon: [{ url: "/favicon-32.png", sizes: "32x32", type: "image/png" }],
+    apple: "/icons/apple-touch-icon.png",
+  },
 };
 
 export const viewport: Viewport = {
@@ -29,7 +33,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es">
       <head>
-        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body className={`${hanken.variable} ${jetbrains.variable} font-sans bg-background text-on-background antialiased`}>
