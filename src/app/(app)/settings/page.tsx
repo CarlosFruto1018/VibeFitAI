@@ -4,6 +4,8 @@ import { db } from "@/lib/db/client";
 import { userProfiles, sessions } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { format } from "date-fns";
+import { TZDate } from "@date-fns/tz";
+import { getUserTimeZone } from "@/lib/timezone";
 import { Flame, Dumbbell } from "lucide-react";
 import { SettingsClient } from "./SettingsClient";
 
@@ -28,19 +30,22 @@ export default async function SettingsPage() {
   }
 
   const user = session!.user!;
+  const tz = await getUserTimeZone();
 
   // Racha de días consecutivos con entrenamiento
   const sortedDates = recentSessions
-    .map((s) => format(new Date(s.startedAt), "yyyy-MM-dd"))
+    .map((s) => format(new TZDate(s.startedAt, tz), "yyyy-MM-dd"))
     .filter((v, i, a) => a.indexOf(v) === i)
     .sort()
     .reverse();
   let streak = 0;
-  let checkDate = format(new Date(), "yyyy-MM-dd");
+  let checkDate = format(new TZDate(Date.now(), tz), "yyyy-MM-dd");
   for (const d of sortedDates) {
     if (d === checkDate) {
       streak++;
-      const prev = new Date(checkDate);
+      // Ancla a mediodía en la TZ del usuario: "yyyy-MM-dd" a secas se parsea
+      // como medianoche UTC y al formatear puede retroceder un día.
+      const prev = new TZDate(`${checkDate}T12:00:00`, tz);
       prev.setDate(prev.getDate() - 1);
       checkDate = format(prev, "yyyy-MM-dd");
     } else break;

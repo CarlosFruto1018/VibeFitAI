@@ -3,7 +3,9 @@ import { db } from "@/lib/db/client";
 import { sessions, personalRecords } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { subDays, format } from "date-fns";
+import { TZDate } from "@date-fns/tz";
 import { es } from "date-fns/locale";
+import { getUserTimeZone } from "@/lib/timezone";
 import { Sparkles, Dumbbell, CalendarDays, ChevronRight, Trophy } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -17,7 +19,10 @@ export default async function DashboardPage() {
   const firstName = session!.user?.name?.split(" ")[0] ?? "Atleta";
   const initial = firstName[0]?.toUpperCase() ?? "A";
 
-  const now = new Date();
+  // Todas las fechas en la zona horaria del usuario: el servidor corre en UTC
+  // y sin esto "hoy" (y la semana entera) se corre un día por la noche.
+  const tz = await getUserTimeZone();
+  const now = new TZDate(Date.now(), tz);
   const weekStart = subDays(now, now.getDay() === 0 ? 6 : now.getDay() - 1);
   weekStart.setHours(0, 0, 0, 0);
   const prevWeekStart = subDays(weekStart, 7);
@@ -51,13 +56,13 @@ export default async function DashboardPage() {
   // Volumen por día de esta semana para las barras L–D
   const dayVolumes = Array.from({ length: 7 }, () => 0);
   for (const s of weekSessions) {
-    const dow = new Date(s.startedAt).getDay();
+    const dow = new TZDate(s.startedAt, tz).getDay();
     dayVolumes[dow === 0 ? 6 : dow - 1] += s.totalVolumeKg ?? 0;
   }
   const maxDayVolume = Math.max(...dayVolumes, 1);
 
   const monthSessions = recentSessions.filter((s) => {
-    const d = new Date(s.startedAt);
+    const d = new TZDate(s.startedAt, tz);
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   });
 
@@ -212,7 +217,7 @@ export default async function DashboardPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-on-surface capitalize">
-                    {format(new Date(s.startedAt), "EEEE d MMM", { locale: es })}
+                    {format(new TZDate(s.startedAt, tz), "EEEE d MMM", { locale: es })}
                   </p>
                   <p className="text-xs text-on-surface-variant">
                     {s.totalVolumeKg

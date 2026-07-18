@@ -55,25 +55,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   logger: {
     // El único síntoma visible de un fallo en el callback OAuth es
     // "error=Configuration" — sin esto, la causa real nunca llega a los logs.
-    // TEMPORAL: además se persiste en verification_tokens (identifier
-    // "__auth_debug") para poder leer el error con stack desde fuera.
     error(error: Error) {
       const cause = (error as { cause?: { err?: Error } }).cause?.err;
       console.error("[auth][error]", error.name, error.message, cause ? `| causa: ${cause.name}: ${cause.message}` : "");
-      try {
-        const detail = [
-          `${new Date().toISOString()} ${error.name}: ${error.message}`,
-          cause ? `causa: ${cause.name}: ${cause.message}` : "",
-          (cause?.stack ?? error.stack ?? "").slice(0, 1200),
-          `#${Math.random().toString(36).slice(2, 8)}`, // evita colisión de PK
-        ].join(" | ");
-        void db
-          .insert(verificationTokens)
-          .values({ identifier: "__auth_debug", token: detail.slice(0, 2000), expires: new Date(Date.now() + 3600_000) })
-          .catch(() => {});
-      } catch {
-        /* nunca romper auth por el logging */
-      }
     },
   },
   callbacks: {

@@ -4,6 +4,8 @@ import { db } from "@/lib/db/client";
 import { sessions } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { format } from "date-fns";
+import { TZDate } from "@date-fns/tz";
+import { getUserTimeZone } from "@/lib/timezone";
 import { es } from "date-fns/locale";
 import { Dumbbell, ChevronRight } from "lucide-react";
 import { RecordPage } from "@/components/record/RecordPage";
@@ -11,6 +13,7 @@ import { RecordPage } from "@/components/record/RecordPage";
 export default async function RecordRoute() {
   const session = await auth();
   const userId = session!.user!.id!;
+  const tz = await getUserTimeZone();
 
   const recent = await db.query.sessions.findMany({
     where: eq(sessions.userId, userId),
@@ -53,10 +56,10 @@ export default async function RecordRoute() {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-sm font-bold text-on-surface capitalize">
-                      {format(new Date(s.startedAt), "EEEE d MMM", { locale: es })}
+                      {format(new TZDate(s.startedAt, tz), "EEEE d MMM", { locale: es })}
                     </span>
                     <span className="text-xs text-on-surface-variant">
-                      {format(new Date(s.startedAt), "HH:mm")}
+                      {format(new TZDate(s.startedAt, tz), "HH:mm")}
                       {s.totalVolumeKg
                         ? ` • ${Math.round(s.totalVolumeKg).toLocaleString("es")} kg`
                         : ""}
