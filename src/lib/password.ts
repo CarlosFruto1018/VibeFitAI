@@ -1,4 +1,4 @@
-import { scrypt, randomBytes, timingSafeEqual, createHash } from "crypto";
+import { scrypt, randomBytes, randomInt, timingSafeEqual, createHash } from "crypto";
 import { promisify } from "util";
 
 const scryptAsync = promisify(scrypt) as (
@@ -24,12 +24,14 @@ export async function verifyPassword(password: string, stored: string): Promise<
   return actual.length === expected.length && timingSafeEqual(actual, expected);
 }
 
-// Los tokens de restablecimiento se guardan hasheados: si alguien lee la
-// tabla verification_tokens no puede usar los tokens directamente.
+// Los códigos de restablecimiento se guardan hasheados: si alguien lee la
+// tabla verification_tokens no puede usar el código directamente.
 export function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }
 
-export function generateResetToken(): string {
-  return randomBytes(32).toString("hex");
+/** Código numérico de 6 dígitos (con ceros a la izquierda) para verificar
+ *  por correo — más fácil de teclear a mano que un token largo. */
+export function generateResetCode(): string {
+  return randomInt(0, 1_000_000).toString().padStart(6, "0");
 }

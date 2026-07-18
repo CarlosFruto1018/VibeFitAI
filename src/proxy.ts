@@ -11,7 +11,6 @@ if (process.env.AUTH_URL && !/^https?:\/\//.test(process.env.AUTH_URL)) {
 const PUBLIC_PATHS = [
   "/login",
   "/register",
-  "/restablecer",
   "/privacidad",
   "/terminos",
   "/api/auth",

@@ -2,20 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db/client";
 import { users, verificationTokens } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { generateResetToken, hashToken } from "@/lib/password";
-import { sendPasswordResetEmail } from "@/lib/email";
+import { generateResetCode, hashToken } from "@/lib/password";
+import { sendPasswordResetCodeEmail } from "@/lib/email";
 import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
 
 const ForgotSchema = z.object({ email: z.string().email().max(254) });
 
-const TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hora
+const CODE_TTL_MS = 15 * 60 * 1000; // 15 minutos — más corto que el enlace anterior porque un código de 6 dígitos es más fácil de adivinar
 
 // Respuesta idéntica exista o no la cuenta: no revela correos registrados.
 const NEUTRAL = {
   ok: true,
-  message: "Si ese correo tiene una cuenta, te llegará un enlace para restablecer tu contraseña.",
+  message: "Si ese correo tiene una cuenta, te llegará un código de 6 dígitos para restablecer tu contraseña.",
 };
 
 export async function POST(req: NextRequest) {
@@ -34,18 +34,16 @@ export async function POST(req: NextRequest) {
     const user = await db.query.users.findFirst({ where: eq(users.email, email) });
     if (!user) return NextResponse.json(NEUTRAL);
 
-    // Un solo token vigente por correo; se guarda hasheado.
-    const token = generateResetToken();
+    // Un solo código vigente por correo; se guarda hasheado.
+    const code = generateResetCode();
     await db.delete(verificationTokens).where(eq(verificationTokens.identifier, email));
     await db.insert(verificationTokens).values({
       identifier: email,
-      token: hashToken(token),
-      expires: new Date(Date.now() + TOKEN_TTL_MS),
+      token: hashToken(code),
+      expires: new Date(Date.now() + CODE_TTL_MS),
     });
 
-    const base = process.env.NEXT_PUBLIC_APP_URL ?? req.nextUrl.origin;
-    const resetUrl = `${base}/restablecer?token=${token}&email=${encodeURIComponent(email)}`;
-    await sendPasswordResetEmail(email, resetUrl);
+    await sendPasswordResetCodeEmail(email, code);
 
     return NextResponse.json(NEUTRAL);
   } catch (err) {

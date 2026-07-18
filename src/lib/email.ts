@@ -8,11 +8,11 @@ const resendAvailable =
 
 const FROM = process.env.EMAIL_FROM ?? "VibeFitAI <onboarding@resend.dev>";
 
-export async function sendPasswordResetEmail(to: string, resetUrl: string): Promise<void> {
+export async function sendPasswordResetCodeEmail(to: string, code: string): Promise<void> {
   if (!resendAvailable) {
-    logger.warn("email", "RESEND_API_KEY no configurada; enlace de restablecimiento solo en log", {
+    logger.warn("email", "RESEND_API_KEY no configurada; código de restablecimiento solo en log", {
       to,
-      resetUrl,
+      code,
     });
     return;
   }
@@ -26,19 +26,19 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string): Prom
     body: JSON.stringify({
       from: FROM,
       to: [to],
-      subject: "Restablece tu contraseña de VibeFitAI",
+      subject: `${code} es tu código para restablecer tu contraseña`,
       html: `
         <div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:24px">
           <h2 style="color:#0f172a;margin-bottom:8px">Restablece tu contraseña</h2>
           <p style="color:#475569;line-height:1.6">
             Recibimos una solicitud para restablecer la contraseña de tu cuenta de VibeFitAI.
-            Si fuiste tú, haz clic en el botón para elegir una nueva. El enlace caduca en 1 hora.
+            Escribe este código en la pantalla donde lo pidió. Caduca en 15 minutos.
           </p>
-          <a href="${resetUrl}"
-             style="display:inline-block;background:#131b2e;color:#ffffff;font-weight:600;
-                    padding:12px 24px;border-radius:12px;text-decoration:none;margin:16px 0">
-            Elegir nueva contraseña
-          </a>
+          <p style="font-family:ui-monospace,monospace;font-size:32px;font-weight:700;
+                     letter-spacing:8px;color:#131b2e;background:#f7f9fb;border-radius:12px;
+                     padding:16px 20px;text-align:center;margin:20px 0">
+            ${code}
+          </p>
           <p style="color:#94a3b8;font-size:13px;line-height:1.6">
             Si no solicitaste este cambio, ignora este correo: tu contraseña seguirá siendo la misma.
           </p>

@@ -10,7 +10,7 @@ import { z } from "zod";
 
 const ResetSchema = z.object({
   email: z.string().email().max(254),
-  token: z.string().min(32).max(128),
+  code: z.string().regex(/^\d{6}$/, "El código debe tener 6 dígitos"),
   password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres").max(100),
 });
 
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
       where: eq(verificationTokens.identifier, email),
     });
 
-    const provided = Buffer.from(hashToken(parsed.data.token));
+    const provided = Buffer.from(hashToken(parsed.data.code));
     const expected = stored ? Buffer.from(stored.token) : Buffer.alloc(provided.length);
     const valid =
       !!stored &&
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
 
     if (!valid) {
       return NextResponse.json(
-        { error: "El enlace no es válido o ya caducó. Solicita uno nuevo." },
+        { error: "El código no es válido o ya caducó. Solicita uno nuevo." },
         { status: 400 }
       );
     }
