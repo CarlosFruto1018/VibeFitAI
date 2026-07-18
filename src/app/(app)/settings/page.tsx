@@ -26,7 +26,7 @@ export default async function SettingsPage() {
 
   async function handleSignOut() {
     "use server";
-    await signOut({ redirectTo: "/login" });
+    await signOut({ redirectTo: "/" });
   }
 
   const user = session!.user!;

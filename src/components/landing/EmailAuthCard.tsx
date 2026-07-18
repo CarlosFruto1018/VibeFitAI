@@ -23,6 +23,7 @@ export function EmailAuthCard({ defaultMode = "login" }: { defaultMode?: Mode })
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -31,6 +32,7 @@ export function EmailAuthCard({ defaultMode = "login" }: { defaultMode?: Mode })
     setMode(next);
     setError(null);
     setNotice(null);
+    setConfirmPassword("");
   }
 
   async function doLogin(loginEmail: string, loginPassword: string) {
@@ -56,6 +58,10 @@ export function EmailAuthCard({ defaultMode = "login" }: { defaultMode?: Mode })
       if (mode === "login") {
         await doLogin(email, password);
       } else if (mode === "register") {
+        if (password !== confirmPassword) {
+          setError("Las contraseñas no coinciden.");
+          return;
+        }
         const res = await fetch("/api/auth/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -162,6 +168,24 @@ export function EmailAuthCard({ defaultMode = "login" }: { defaultMode?: Mode })
             onChange={(e) => setPassword(e.target.value)}
             placeholder={mode === "register" ? "Mínimo 8 caracteres" : "Tu contraseña"}
             autoComplete={mode === "register" ? "new-password" : "current-password"}
+            required
+            minLength={8}
+            disabled={busy}
+            className={FIELD}
+          />
+        </div>
+      )}
+
+      {mode === "register" && (
+        <div>
+          <label htmlFor="auth-confirm-password" className={LABEL}>Confirmar contraseña</label>
+          <input
+            id="auth-confirm-password"
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="Repite tu contraseña"
+            autoComplete="new-password"
             required
             minLength={8}
             disabled={busy}
