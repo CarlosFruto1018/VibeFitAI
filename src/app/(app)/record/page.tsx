@@ -6,6 +6,8 @@ import { eq, desc } from "drizzle-orm";
 import { format } from "date-fns";
 import { TZDate } from "@date-fns/tz";
 import { getUserTimeZone } from "@/lib/timezone";
+import { getWeightUnit } from "@/lib/get-weight-unit";
+import { formatWeight } from "@/lib/utils";
 import { es } from "date-fns/locale";
 import { Dumbbell, ChevronRight } from "lucide-react";
 import { RecordPage } from "@/components/record/RecordPage";
@@ -14,6 +16,7 @@ export default async function RecordRoute() {
   const session = await auth();
   const userId = session!.user!.id!;
   const tz = await getUserTimeZone();
+  const unit = await getWeightUnit(userId);
 
   const recent = await db.query.sessions.findMany({
     where: eq(sessions.userId, userId),
@@ -32,7 +35,7 @@ export default async function RecordRoute() {
       </section>
 
       {/* Captura rápida + entrada manual */}
-      <RecordPage />
+      <RecordPage unit={unit} />
 
       {/* Historial Reciente */}
       {recent.length > 0 && (
@@ -60,9 +63,7 @@ export default async function RecordRoute() {
                     </span>
                     <span className="text-xs text-on-surface-variant">
                       {format(new TZDate(s.startedAt, tz), "HH:mm")}
-                      {s.totalVolumeKg
-                        ? ` • ${Math.round(s.totalVolumeKg).toLocaleString("es")} kg`
-                        : ""}
+                      {s.totalVolumeKg ? ` • ${formatWeight(s.totalVolumeKg, unit)}` : ""}
                     </span>
                   </div>
                 </div>

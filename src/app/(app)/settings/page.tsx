@@ -51,13 +51,6 @@ export default async function SettingsPage() {
     } else break;
   }
 
-  const LEVEL_LABELS: Record<string, string> = {
-    beginner: "Principiante",
-    intermediate: "Intermedio",
-    advanced: "Avanzado",
-  };
-  const levelLabel = LEVEL_LABELS[profile?.fitnessLevel ?? "intermediate"] ?? "Intermedio";
-
   return (
     <div className="flex flex-col gap-7 pt-2">
       {/* Cabecera de perfil centrada, como el diseño de Stitch */}
@@ -76,12 +69,7 @@ export default async function SettingsPage() {
         )}
         <div>
           <h1 className="text-2xl font-black tracking-tight text-on-surface">{user.name}</h1>
-          <div className="mt-1.5 flex items-center justify-center gap-2 flex-wrap">
-            <span className="px-3 py-0.5 rounded-full bg-primary-container text-on-primary-container text-[10px] font-mono font-semibold uppercase tracking-wider">
-              {levelLabel}
-            </span>
-            <span className="text-xs text-on-surface-variant">• {user.email}</span>
-          </div>
+          <p className="mt-1.5 text-xs text-on-surface-variant">{user.email}</p>
         </div>
       </section>
 
@@ -106,8 +94,7 @@ export default async function SettingsPage() {
       {/* Ajustes */}
       <SettingsClient
         profile={{
-          fitnessLevel: profile?.fitnessLevel ?? "intermediate",
-          preferredUnits: profile?.preferredUnits ?? "kg",
+          preferredUnits: profile?.preferredUnits === "lb" ? "lb" : "kg",
           bodyWeightKg: profile?.bodyWeightKg ?? null,
         }}
         signOutAction={handleSignOut}

@@ -5,9 +5,25 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatWeight(kg: number, unit: string = "kg"): string {
-  if (unit === "lb") return `${Math.round(kg * 2.20462)} lb`;
-  return `${kg} kg`;
+export type WeightUnit = "kg" | "lb";
+
+const KG_TO_LB = 2.2046226218;
+
+/** kg es la unidad canónica de almacenamiento en toda la DB (columnas *_kg). */
+export function convertWeight(kg: number, unit: WeightUnit): number {
+  return unit === "lb" ? kg * KG_TO_LB : kg;
+}
+
+/** Convierte un valor ingresado por el usuario en `unit` de vuelta a kg para guardar. */
+export function toKg(value: number, unit: WeightUnit): number {
+  return unit === "lb" ? value / KG_TO_LB : value;
+}
+
+export function formatWeight(kg: number, unit: WeightUnit = "kg", decimals = 0): string {
+  const converted = convertWeight(kg, unit);
+  const factor = 10 ** decimals;
+  const rounded = Math.round(converted * factor) / factor;
+  return `${rounded.toLocaleString("es")} ${unit}`;
 }
 
 export function formatDuration(minutes: number): string {

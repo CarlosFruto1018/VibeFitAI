@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil, Trash2, Check, X, Loader2 } from "lucide-react";
 import { logger } from "@/lib/logger";
+import { convertWeight, toKg, type WeightUnit } from "@/lib/utils";
 
 interface EditableSetProps {
   set: {
@@ -15,16 +16,21 @@ interface EditableSetProps {
     rpe: number | null;
   };
   index: number;
+  unit?: WeightUnit;
 }
 
 const GRID = "grid grid-cols-[2rem_1fr_1fr_1fr_4.5rem] px-4 py-2.5 items-center gap-1";
 
-export function EditableSet({ set, index }: EditableSetProps) {
+export function EditableSet({ set, index, unit = "kg" }: EditableSetProps) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [busy, setBusy] = useState(false);
   const [reps, setReps] = useState(set.reps?.toString() ?? "");
-  const [weight, setWeight] = useState(set.weightKg?.toString() ?? "");
+  // El campo se edita en la unidad del usuario; set.weightKg (kg canónico)
+  // se convierte solo al mostrarlo/editarlo, y se vuelve a kg al guardar.
+  const [weight, setWeight] = useState(
+    set.weightKg != null ? String(Math.round(convertWeight(set.weightKg, unit) * 10) / 10) : ""
+  );
   const [rpe, setRpe] = useState(set.rpe?.toString() ?? "");
 
   async function save() {
@@ -35,7 +41,7 @@ export function EditableSet({ set, index }: EditableSetProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           reps: reps === "" ? null : Number(reps),
-          weightKg: weight === "" ? null : Number(weight),
+          weightKg: weight === "" ? null : toKg(Number(weight), unit),
           rpe: rpe === "" ? null : Number(rpe),
         }),
       });
@@ -80,7 +86,7 @@ export function EditableSet({ set, index }: EditableSetProps) {
           step="0.5"
           value={weight}
           onChange={(e) => setWeight(e.target.value)}
-          aria-label="Peso en kg"
+          aria-label={`Peso en ${unit}`}
           className="w-full max-w-20 rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-accent"
         />
         <input
@@ -122,7 +128,11 @@ export function EditableSet({ set, index }: EditableSetProps) {
         {set.reps ? `${set.reps}` : set.durationSec ? `${Math.round(set.durationSec / 60)}min` : "—"}
       </span>
       <span className="text-sm font-semibold text-slate-900">
-        {set.weightKg ? `${set.weightKg} kg` : set.distanceM ? `${set.distanceM}m` : "—"}
+        {set.weightKg
+          ? `${Math.round(convertWeight(set.weightKg, unit) * 10) / 10} ${unit}`
+          : set.distanceM
+            ? `${set.distanceM}m`
+            : "—"}
       </span>
       <span className="text-xs text-slate-400">{set.rpe ? `${set.rpe}/10` : "—"}</span>
       <div className="flex items-center gap-1 justify-end">

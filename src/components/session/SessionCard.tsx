@@ -1,6 +1,6 @@
 "use client";
 
-import { formatDate, formatDuration, formatWeight } from "@/lib/utils";
+import { formatDate, formatDuration, formatWeight, convertWeight, type WeightUnit } from "@/lib/utils";
 import type { Session, WorkoutSet, Exercise } from "@/lib/db/schema";
 import { Card } from "@/components/ui/Card";
 import { Dumbbell, Clock, ChevronRight } from "lucide-react";
@@ -11,9 +11,10 @@ type SessionWithSets = Session & { workoutSets: SetWithExercise[] };
 
 interface SessionCardProps {
   session: SessionWithSets;
+  unit?: WeightUnit;
 }
 
-export function SessionCard({ session }: SessionCardProps) {
+export function SessionCard({ session, unit = "kg" }: SessionCardProps) {
   const byExercise = session.workoutSets.reduce<Record<string, SetWithExercise[]>>(
     (acc, s) => {
       const name = s.exercise?.displayName ?? s.exerciseName ?? "Ejercicio";
@@ -38,7 +39,7 @@ export function SessionCard({ session }: SessionCardProps) {
           </div>
           <div className="flex items-center gap-2">
             {session.totalVolumeKg && (
-              <Chip icon={<Dumbbell size={11} />} label={formatWeight(session.totalVolumeKg)} sublabel="vol." />
+              <Chip icon={<Dumbbell size={11} />} label={formatWeight(session.totalVolumeKg, unit)} sublabel="vol." />
             )}
             {session.durationMin && (
               <Chip icon={<Clock size={11} />} label={formatDuration(session.durationMin)} sublabel="min" />
@@ -57,7 +58,7 @@ export function SessionCard({ session }: SessionCardProps) {
                 <span className="text-sm text-slate-700 truncate max-w-[60%]">{name}</span>
                 <span className="text-xs text-slate-400">
                   {sets.length} series
-                  {maxWeight > 0 && ` · ${maxWeight} kg`}
+                  {maxWeight > 0 && ` · ${Math.round(convertWeight(maxWeight, unit) * 10) / 10} ${unit}`}
                   {totalReps > 0 && ` · ${totalReps} reps`}
                 </span>
               </div>

@@ -3,6 +3,7 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { convertWeight, type WeightUnit } from "@/lib/utils";
 
 interface DataPoint {
   date: string;
@@ -13,9 +14,10 @@ interface DataPoint {
 interface LoadChartProps {
   data: DataPoint[];
   exerciseName: string;
+  unit?: WeightUnit;
 }
 
-export function LoadChart({ data, exerciseName }: LoadChartProps) {
+export function LoadChart({ data, exerciseName, unit = "kg" }: LoadChartProps) {
   if (data.length === 0) {
     return (
       <div className="flex items-center justify-center h-40 text-slate-400 text-sm">
@@ -27,6 +29,7 @@ export function LoadChart({ data, exerciseName }: LoadChartProps) {
   const formatted = data.map((d) => ({
     ...d,
     label: format(new Date(d.date), "d MMM", { locale: es }),
+    weightKg: Math.round(convertWeight(d.weightKg, unit) * 10) / 10,
   }));
 
   const first = formatted[0].weightKg;
@@ -45,11 +48,11 @@ export function LoadChart({ data, exerciseName }: LoadChartProps) {
         <LineChart data={formatted} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" />
           <XAxis dataKey="label" tick={{ fontSize: 10, fill: "#94a3b8" }} axisLine={false} tickLine={false} />
-          <YAxis tick={{ fontSize: 10, fill: "#94a3b8" }} unit="kg" axisLine={false} tickLine={false} />
+          <YAxis tick={{ fontSize: 10, fill: "#94a3b8" }} unit={unit} axisLine={false} tickLine={false} />
           <Tooltip
             contentStyle={{ background: "#0f172a", border: "none", borderRadius: 10, color: "#f8fafc", fontSize: 12, padding: "6px 12px" }}
             labelStyle={{ color: "#94a3b8", fontSize: 11 }}
-            formatter={(v) => [`${v} kg`, "Carga máx."]}
+            formatter={(v) => [`${v} ${unit}`, "Carga máx."]}
             cursor={{ stroke: "#e2e8f0", strokeWidth: 1 }}
           />
           <Line

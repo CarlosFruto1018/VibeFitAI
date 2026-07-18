@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import { AudioRecorder } from "./AudioRecorder";
 import { PhotoUpload } from "./PhotoUpload";
 import { Mic, Camera, Sparkles, Loader2, CheckCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatWeight, type WeightUnit } from "@/lib/utils";
 import { Textarea } from "@/components/ui/Input";
 
 type Capture = "audio" | "photo" | null;
@@ -22,13 +22,14 @@ interface RecordResult {
 }
 
 interface RecordPageProps {
+  unit?: WeightUnit;
   onResult?: (result: RecordResult) => void;
 }
 
 const POLL_INTERVAL_MS = 3000;
 const POLL_MAX_ATTEMPTS = 20; // ~1 minuto
 
-export function RecordPage({ onResult }: RecordPageProps) {
+export function RecordPage({ unit = "kg", onResult }: RecordPageProps) {
   const [capture, setCapture] = useState<Capture>(null);
   const [textInput, setTextInput] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -259,7 +260,7 @@ export function RecordPage({ onResult }: RecordPageProps) {
               const firstSet = ex.sets[0];
               const summary = [
                 firstSet?.reps ? `${setCount}×${firstSet.reps}` : `${setCount} series`,
-                firstSet?.weight_kg ? `${firstSet.weight_kg} kg` : null,
+                firstSet?.weight_kg ? formatWeight(firstSet.weight_kg, unit, 1) : null,
                 firstSet?.duration_sec ? `${Math.round(firstSet.duration_sec / 60)} min` : null,
               ].filter(Boolean).join(" · ");
               return (

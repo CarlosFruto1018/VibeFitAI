@@ -4,11 +4,13 @@ import { sessions } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { SessionCard } from "@/components/session/SessionCard";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { getWeightUnit } from "@/lib/get-weight-unit";
 import { History, Dumbbell } from "lucide-react";
 
 export default async function HistoryPage() {
   const session = await auth();
   const userId = session!.user!.id!;
+  const unit = await getWeightUnit(userId);
 
   // Si la consulta falla, el error.tsx de la ruta muestra un estado amigable.
   const allSessions = await db.query.sessions.findMany({
@@ -46,7 +48,7 @@ export default async function HistoryPage() {
       ) : (
         <div className="flex flex-col gap-3">
           {allSessions.map((s) => (
-            <SessionCard key={s.id} session={s} />
+            <SessionCard key={s.id} session={s} unit={unit} />
           ))}
         </div>
       )}

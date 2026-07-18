@@ -6,6 +6,7 @@ import { auth } from "@/lib/auth";
 import { LandingNav } from "@/components/landing/LandingNav";
 import { IPhoneFrame } from "@/components/landing/IPhoneFrame";
 import { PhoneDemo } from "@/components/landing/PhoneDemo";
+import { Gallery } from "@/components/landing/Gallery";
 
 export const metadata: Metadata = {
   title: "VibeFitAI — Registra tu entrenamiento en segundos",
@@ -93,6 +94,9 @@ export default async function LandingPage() {
           </IPhoneFrame>
         </div>
       </section>
+
+      {/* ── GALERÍA ── */}
+      <Gallery />
 
       {/* ── FEATURES ── */}
       <section id="caracteristicas" className="max-w-6xl mx-auto px-5 sm:px-6 py-16 lg:py-20">

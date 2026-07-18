@@ -107,6 +107,18 @@ body {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+/* Carrusel de la galería del landing: el track mide 2× el contenido real
+   (ver Gallery.tsx), así que desplazar exactamente -50% reinicia el loop
+   sin salto visible. */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 22s linear infinite;
+}
+
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: none; }
@@ -129,7 +141,8 @@ body {
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .animate-fade-in,
-  .stagger-children > * {
+  .stagger-children > *,
+  .animate-marquee {
     animation: none;
   }
 }

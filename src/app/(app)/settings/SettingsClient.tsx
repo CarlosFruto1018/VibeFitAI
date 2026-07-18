@@ -2,27 +2,25 @@
 
 import { useState } from "react";
 import { Sliders, Scale, LogOut, Trash2, CheckCircle, XCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, convertWeight, toKg, type WeightUnit } from "@/lib/utils";
 
 interface Props {
   profile: {
-    fitnessLevel: string;
-    preferredUnits: string;
+    preferredUnits: WeightUnit;
     bodyWeightKg: number | null;
   };
   signOutAction: () => Promise<void>;
 }
 
-const FITNESS_LEVELS = [
-  { id: "beginner", label: "Principiante" },
-  { id: "intermediate", label: "Intermedio" },
-  { id: "advanced", label: "Avanzado" },
-] as const;
-
 export function SettingsClient({ profile, signOutAction }: Props) {
-  const [fitnessLevel, setFitnessLevel] = useState(profile.fitnessLevel);
-  const [preferredUnits, setPreferredUnits] = useState(profile.preferredUnits);
-  const [bodyWeight, setBodyWeight] = useState(profile.bodyWeightKg?.toString() ?? "");
+  const [preferredUnits, setPreferredUnits] = useState<WeightUnit>(profile.preferredUnits);
+  // El campo se edita siempre en la unidad seleccionada; el valor guardado
+  // en profile.bodyWeightKg es kg canónico, se convierte solo al mostrarlo.
+  const [bodyWeight, setBodyWeight] = useState(
+    profile.bodyWeightKg != null
+      ? String(Math.round(convertWeight(profile.bodyWeightKg, profile.preferredUnits) * 10) / 10)
+      : ""
+  );
   const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<"ok" | "error" | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -30,6 +28,19 @@ export function SettingsClient({ profile, signOutAction }: Props) {
   const [deleting, setDeleting] = useState(false);
 
   const canDelete = deleteConfirmText === "ELIMINAR";
+
+  function handleUnitChange(next: WeightUnit) {
+    // Convierte el número que ya está en el campo para que siga representando
+    // el mismo peso real en la nueva unidad, en vez de reinterpretarlo.
+    setBodyWeight((current) => {
+      if (current === "") return current;
+      const parsed = parseFloat(current);
+      if (Number.isNaN(parsed)) return current;
+      const kg = toKg(parsed, preferredUnits);
+      return String(Math.round(convertWeight(kg, next) * 10) / 10);
+    });
+    setPreferredUnits(next);
+  }
 
   async function handleSave() {
     setSaving(true);
@@ -39,9 +50,8 @@ export function SettingsClient({ profile, signOutAction }: Props) {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          fitnessLevel,
           preferredUnits,
-          bodyWeightKg: bodyWeight ? parseFloat(bodyWeight) : undefined,
+          bodyWeightKg: bodyWeight ? toKg(parseFloat(bodyWeight), preferredUnits) : undefined,
         }),
       });
       setSaveStatus(res.ok ? "ok" : "error");
@@ -77,32 +87,11 @@ export function SettingsClient({ profile, signOutAction }: Props) {
           </div>
           <div>
             <h2 className="text-sm font-semibold text-on-surface">Preferencias de Entrenamiento</h2>
-            <p className="text-[11px] text-on-surface-variant">Nivel, unidades y peso corporal</p>
+            <p className="text-[11px] text-on-surface-variant">Unidades y peso corporal</p>
           </div>
         </div>
 
         <div className="flex flex-col gap-5 p-4">
-          {/* Fitness level */}
-          <div className="flex flex-col gap-2">
-            <label className="text-xs font-medium text-on-surface-variant">Nivel de fitness</label>
-            <div className="flex gap-1.5">
-              {FITNESS_LEVELS.map((level) => (
-                <button
-                  key={level.id}
-                  onClick={() => setFitnessLevel(level.id)}
-                  className={cn(
-                    "flex-1 py-2.5 rounded-xl text-xs font-medium transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
-                    fitnessLevel === level.id
-                      ? "bg-primary text-white shadow-sm"
-                      : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container hover:text-on-surface"
-                  )}
-                >
-                  {level.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
           {/* Units */}
           <div className="flex flex-col gap-2">
             <label className="text-xs font-medium text-on-surface-variant">Unidades de peso</label>
@@ -110,7 +99,7 @@ export function SettingsClient({ profile, signOutAction }: Props) {
               {(["kg", "lb"] as const).map((unit) => (
                 <button
                   key={unit}
-                  onClick={() => setPreferredUnits(unit)}
+                  onClick={() => handleUnitChange(unit)}
                   className={cn(
                     "flex-1 py-2.5 rounded-xl text-xs font-medium transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
                     preferredUnits === unit

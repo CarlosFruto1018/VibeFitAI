@@ -6,9 +6,10 @@ import { subDays, format } from "date-fns";
 import { TZDate } from "@date-fns/tz";
 import { es } from "date-fns/locale";
 import { getUserTimeZone } from "@/lib/timezone";
+import { getWeightUnit } from "@/lib/get-weight-unit";
 import { Sparkles, Dumbbell, CalendarDays, ChevronRight, Trophy } from "lucide-react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
+import { cn, convertWeight, formatWeight } from "@/lib/utils";
 
 const WEEKLY_GOAL = 5;
 const DAY_LABELS = ["L", "M", "X", "J", "V", "S", "D"];
@@ -22,6 +23,7 @@ export default async function DashboardPage() {
   // Todas las fechas en la zona horaria del usuario: el servidor corre en UTC
   // y sin esto "hoy" (y la semana entera) se corre un día por la noche.
   const tz = await getUserTimeZone();
+  const unit = await getWeightUnit(userId);
   const now = new TZDate(Date.now(), tz);
   const weekStart = subDays(now, now.getDay() === 0 ? 6 : now.getDay() - 1);
   weekStart.setHours(0, 0, 0, 0);
@@ -98,7 +100,8 @@ export default async function DashboardPage() {
           <div>
             <h3 className="text-xs font-medium text-on-surface-variant">Actividad Semanal</h3>
             <p className="text-2xl font-black text-on-surface font-mono mt-0.5">
-              {Math.round(weekVolumeKg).toLocaleString("es")} <span className="text-base font-bold">kg</span>
+              {Math.round(convertWeight(weekVolumeKg, unit)).toLocaleString("es")}{" "}
+              <span className="text-base font-bold">{unit}</span>
             </p>
           </div>
           {weekPct !== null && (
@@ -151,7 +154,11 @@ export default async function DashboardPage() {
               {topPr ? `Récord · ${topPr.exercise?.displayName ?? "Ejercicio"}` : "Récords"}
             </p>
             <p className="text-xl font-black text-on-surface font-mono">
-              {topPr ? `${topPr.value}${topPr.metric === "weight_kg" ? " kg" : ""}` : "—"}
+              {topPr
+                ? topPr.metric === "weight_kg"
+                  ? formatWeight(topPr.value, unit, 1)
+                  : topPr.value
+                : "—"}
             </p>
           </div>
         </div>
@@ -221,7 +228,7 @@ export default async function DashboardPage() {
                   </p>
                   <p className="text-xs text-on-surface-variant">
                     {s.totalVolumeKg
-                      ? `${Math.round(s.totalVolumeKg).toLocaleString("es")} kg levantados`
+                      ? `${formatWeight(s.totalVolumeKg, unit)} levantados`
                       : "Sin volumen registrado"}
                   </p>
                 </div>

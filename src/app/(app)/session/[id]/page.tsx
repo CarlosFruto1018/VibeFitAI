@@ -7,12 +7,15 @@ import { ArrowLeft, Dumbbell, Hash, Weight, FileText } from "lucide-react";
 import { LocalDate } from "@/components/ui/LocalDate";
 import { Card } from "@/components/ui/Card";
 import { EditableSet } from "@/components/session/EditableSet";
+import { getWeightUnit } from "@/lib/get-weight-unit";
+import { formatWeight } from "@/lib/utils";
 import Link from "next/link";
 
 export default async function SessionDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const authSession = await auth();
   const userId = authSession!.user!.id!;
+  const unit = await getWeightUnit(userId);
 
   const session = await db.query.sessions.findFirst({
     where: eq(sessions.id, id),
@@ -60,7 +63,7 @@ export default async function SessionDetailPage({ params }: { params: Promise<{ 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
         {session.totalVolumeKg && (
-          <StatCard value={`${Math.round(session.totalVolumeKg).toLocaleString("es")} kg`} label="Volumen" />
+          <StatCard value={formatWeight(session.totalVolumeKg, unit)} label="Volumen" />
         )}
         <StatCard value={String(exerciseCount)} label={exerciseCount === 1 ? "Ejercicio" : "Ejercicios"} />
         <StatCard value={String(session.workoutSets.length)} label="Series" />
@@ -97,7 +100,7 @@ export default async function SessionDetailPage({ params }: { params: Promise<{ 
             {/* Sets */}
             <div className="divide-y divide-slate-50">
               {sets.map((s, i) => (
-                <EditableSet key={s.id} set={s} index={i} />
+                <EditableSet key={s.id} set={s} index={i} unit={unit} />
               ))}
             </div>
           </Card>

@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# fuentes originales sin comprimir (las versiones optimizadas viven en public/img)
+/img
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

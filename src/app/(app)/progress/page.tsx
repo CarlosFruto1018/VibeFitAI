@@ -6,11 +6,14 @@ import { subMonths } from "date-fns";
 import { LoadChart } from "@/components/progress/LoadChart";
 import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
+import { getWeightUnit } from "@/lib/get-weight-unit";
+import { formatWeight } from "@/lib/utils";
 import { TrendingUp, Trophy, Dumbbell } from "lucide-react";
 
 export default async function ProgressPage() {
   const session = await auth();
   const userId = session!.user!.id!;
+  const unit = await getWeightUnit(userId);
 
   const threeMonthsAgo = subMonths(new Date(), 3);
 
@@ -90,8 +93,7 @@ export default async function ProgressPage() {
               <div key={pr.id} className="flex items-center justify-between px-4 py-3">
                 <p className="text-sm text-slate-700">{pr.exercise?.displayName}</p>
                 <p className="text-sm font-black font-mono text-accent">
-                  {pr.value}
-                  {pr.metric === "weight_kg" ? " kg" : ` ${pr.metric}`}
+                  {pr.metric === "weight_kg" ? formatWeight(pr.value, unit, 1) : `${pr.value} ${pr.metric}`}
                 </p>
               </div>
             ))}
@@ -109,7 +111,7 @@ export default async function ProgressPage() {
           <div className="flex flex-col gap-3">
             {charts.slice(0, 6).map((e) => (
               <Card key={e.name} className="p-4">
-                <LoadChart data={e.data} exerciseName={e.name} />
+                <LoadChart data={e.data} exerciseName={e.name} unit={unit} />
               </Card>
             ))}
           </div>
