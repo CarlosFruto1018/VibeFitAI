@@ -12,8 +12,6 @@ export const SessionPatchSchema = z
     message: "Debes enviar al menos un campo: status o summaryText",
   });
 
-export type SessionPatch = z.infer<typeof SessionPatchSchema>;
-
 export const SetPatchSchema = z
   .object({
     reps: z.number().int().min(0).max(1000).nullable().optional(),
@@ -26,12 +24,10 @@ export const SetPatchSchema = z
     message: "Debes enviar al menos un campo a modificar",
   });
 
-export type SetPatch = z.infer<typeof SetPatchSchema>;
-
 // ── Subida de archivos ──────────────────────────────────────────
 // Allowlist de MIME → extensión. El bucket R2 es público: sin esta
 // restricción se podría subir HTML/JS y servirlo desde nuestro dominio.
-export const ALLOWED_UPLOAD_MIME: Record<"audio" | "image", Record<string, string>> = {
+const ALLOWED_UPLOAD_MIME: Record<"audio" | "image", Record<string, string>> = {
   audio: {
     "audio/webm": "webm",
     "audio/mp4": "m4a",

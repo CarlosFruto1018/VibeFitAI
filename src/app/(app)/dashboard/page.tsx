@@ -5,7 +5,7 @@ import { eq, desc } from "drizzle-orm";
 import { subDays, format } from "date-fns";
 import { TZDate } from "@date-fns/tz";
 import { es } from "date-fns/locale";
-import { getUserTimeZone } from "@/lib/timezone";
+import { getUserTimeZone, nowInTimeZone } from "@/lib/timezone";
 import { getWeightUnit } from "@/lib/get-weight-unit";
 import { Sparkles, Dumbbell, CalendarDays, ChevronRight, Trophy } from "lucide-react";
 import Link from "next/link";
@@ -22,9 +22,8 @@ export default async function DashboardPage() {
 
   // Todas las fechas en la zona horaria del usuario: el servidor corre en UTC
   // y sin esto "hoy" (y la semana entera) se corre un día por la noche.
-  const tz = await getUserTimeZone();
-  const unit = await getWeightUnit(userId);
-  const now = new TZDate(Date.now(), tz);
+  const [tz, unit] = await Promise.all([getUserTimeZone(), getWeightUnit(userId)]);
+  const now = nowInTimeZone(tz);
   const weekStart = subDays(now, now.getDay() === 0 ? 6 : now.getDay() - 1);
   weekStart.setHours(0, 0, 0, 0);
   const prevWeekStart = subDays(weekStart, 7);

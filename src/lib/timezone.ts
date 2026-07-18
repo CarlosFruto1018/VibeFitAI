@@ -1,4 +1,12 @@
 import { cookies, headers } from "next/headers";
+import { TZDate } from "@date-fns/tz";
+
+/** Instante actual como TZDate en la zona horaria dada. Centralizado aquí
+ *  para no repetir el patrón en cada página (y mantener el render de los
+ *  server components libre de llamadas directas a Date.now()). */
+export function nowInTimeZone(tz: string): TZDate {
+  return new TZDate(Date.now(), tz);
+}
 
 /**
  * Zona horaria del usuario para cálculos de fecha en el servidor.

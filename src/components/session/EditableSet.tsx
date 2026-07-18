@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Pencil, Trash2, Check, X, Loader2 } from "lucide-react";
 import { logger } from "@/lib/logger";
-import { convertWeight, toKg, type WeightUnit } from "@/lib/utils";
+import { displayWeight, toKg, type WeightUnit } from "@/lib/utils";
 
 interface EditableSetProps {
   set: {
@@ -29,7 +29,7 @@ export function EditableSet({ set, index, unit = "kg" }: EditableSetProps) {
   // El campo se edita en la unidad del usuario; set.weightKg (kg canónico)
   // se convierte solo al mostrarlo/editarlo, y se vuelve a kg al guardar.
   const [weight, setWeight] = useState(
-    set.weightKg != null ? String(Math.round(convertWeight(set.weightKg, unit) * 10) / 10) : ""
+    set.weightKg != null ? String(displayWeight(set.weightKg, unit)) : ""
   );
   const [rpe, setRpe] = useState(set.rpe?.toString() ?? "");
 
@@ -129,7 +129,7 @@ export function EditableSet({ set, index, unit = "kg" }: EditableSetProps) {
       </span>
       <span className="text-sm font-semibold text-slate-900">
         {set.weightKg
-          ? `${Math.round(convertWeight(set.weightKg, unit) * 10) / 10} ${unit}`
+          ? `${displayWeight(set.weightKg, unit)} ${unit}`
           : set.distanceM
             ? `${set.distanceM}m`
             : "—"}

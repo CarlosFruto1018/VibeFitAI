@@ -3,7 +3,7 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { convertWeight, type WeightUnit } from "@/lib/utils";
+import { displayWeight, type WeightUnit } from "@/lib/utils";
 
 interface DataPoint {
   date: string;
@@ -29,7 +29,7 @@ export function LoadChart({ data, exerciseName, unit = "kg" }: LoadChartProps) {
   const formatted = data.map((d) => ({
     ...d,
     label: format(new Date(d.date), "d MMM", { locale: es }),
-    weightKg: Math.round(convertWeight(d.weightKg, unit) * 10) / 10,
+    weightKg: displayWeight(d.weightKg, unit),
   }));
 
   const first = formatted[0].weightKg;

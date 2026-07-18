@@ -19,6 +19,11 @@ export function toKg(value: number, unit: WeightUnit): number {
   return unit === "lb" ? value / KG_TO_LB : value;
 }
 
+/** Peso convertido a `unit` y redondeado a 1 decimal — para mostrar/editar. */
+export function displayWeight(kg: number, unit: WeightUnit): number {
+  return Math.round(convertWeight(kg, unit) * 10) / 10;
+}
+
 export function formatWeight(kg: number, unit: WeightUnit = "kg", decimals = 0): string {
   const converted = convertWeight(kg, unit);
   const factor = 10 ** decimals;

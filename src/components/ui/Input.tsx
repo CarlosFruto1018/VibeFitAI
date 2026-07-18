@@ -22,19 +22,3 @@ export function Textarea({
     </div>
   );
 }
-
-export function Input({
-  label,
-  className,
-  ...props
-}: React.InputHTMLAttributes<HTMLInputElement> & { label: string }) {
-  const id = useId();
-  return (
-    <div className="w-full">
-      <label htmlFor={id} className="sr-only">
-        {label}
-      </label>
-      <input id={id} className={cn(FIELD_CLASSES, className)} {...props} />
-    </div>
-  );
-}

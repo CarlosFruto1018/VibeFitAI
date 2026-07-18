@@ -15,8 +15,7 @@ import { RecordPage } from "@/components/record/RecordPage";
 export default async function RecordRoute() {
   const session = await auth();
   const userId = session!.user!.id!;
-  const tz = await getUserTimeZone();
-  const unit = await getWeightUnit(userId);
+  const [tz, unit] = await Promise.all([getUserTimeZone(), getWeightUnit(userId)]);
 
   const recent = await db.query.sessions.findMany({
     where: eq(sessions.userId, userId),

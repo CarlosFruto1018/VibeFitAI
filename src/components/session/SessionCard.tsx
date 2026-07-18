@@ -1,6 +1,6 @@
 "use client";
 
-import { formatDate, formatDuration, formatWeight, convertWeight, type WeightUnit } from "@/lib/utils";
+import { formatDate, formatDuration, formatWeight, displayWeight, type WeightUnit } from "@/lib/utils";
 import type { Session, WorkoutSet, Exercise } from "@/lib/db/schema";
 import { Card } from "@/components/ui/Card";
 import { Dumbbell, Clock, ChevronRight } from "lucide-react";
@@ -58,7 +58,7 @@ export function SessionCard({ session, unit = "kg" }: SessionCardProps) {
                 <span className="text-sm text-slate-700 truncate max-w-[60%]">{name}</span>
                 <span className="text-xs text-slate-400">
                   {sets.length} series
-                  {maxWeight > 0 && ` · ${Math.round(convertWeight(maxWeight, unit) * 10) / 10} ${unit}`}
+                  {maxWeight > 0 && ` · ${displayWeight(maxWeight, unit)} ${unit}`}
                   {totalReps > 0 && ` · ${totalReps} reps`}
                 </span>
               </div>

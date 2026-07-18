@@ -5,7 +5,7 @@ import { userProfiles, sessions } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { format } from "date-fns";
 import { TZDate } from "@date-fns/tz";
-import { getUserTimeZone } from "@/lib/timezone";
+import { getUserTimeZone, nowInTimeZone } from "@/lib/timezone";
 import { Flame, Dumbbell } from "lucide-react";
 import { SettingsClient } from "./SettingsClient";
 
@@ -39,7 +39,7 @@ export default async function SettingsPage() {
     .sort()
     .reverse();
   let streak = 0;
-  let checkDate = format(new TZDate(Date.now(), tz), "yyyy-MM-dd");
+  let checkDate = format(nowInTimeZone(tz), "yyyy-MM-dd");
   for (const d of sortedDates) {
     if (d === checkDate) {
       streak++;

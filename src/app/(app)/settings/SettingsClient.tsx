@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Sliders, Scale, LogOut, Trash2, CheckCircle, XCircle } from "lucide-react";
-import { cn, convertWeight, toKg, type WeightUnit } from "@/lib/utils";
+import { cn, displayWeight, toKg, type WeightUnit } from "@/lib/utils";
 
 interface Props {
   profile: {
@@ -18,7 +18,7 @@ export function SettingsClient({ profile, signOutAction }: Props) {
   // en profile.bodyWeightKg es kg canónico, se convierte solo al mostrarlo.
   const [bodyWeight, setBodyWeight] = useState(
     profile.bodyWeightKg != null
-      ? String(Math.round(convertWeight(profile.bodyWeightKg, profile.preferredUnits) * 10) / 10)
+      ? String(displayWeight(profile.bodyWeightKg, profile.preferredUnits))
       : ""
   );
   const [saving, setSaving] = useState(false);
@@ -37,7 +37,7 @@ export function SettingsClient({ profile, signOutAction }: Props) {
       const parsed = parseFloat(current);
       if (Number.isNaN(parsed)) return current;
       const kg = toKg(parsed, preferredUnits);
-      return String(Math.round(convertWeight(kg, next) * 10) / 10);
+      return String(displayWeight(kg, next));
     });
     setPreferredUnits(next);
   }
