@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
 import { sessions, personalRecords, userProfiles, users } from "@/lib/db/schema";
@@ -49,7 +50,10 @@ export default async function DashboardPage() {
     }),
   ]);
 
-  const weeklyGoal = profile?.weeklyGoal ?? 5;
+  // Cuenta recién creada (sin fila de perfil): pasa primero por el onboarding.
+  if (!profile) redirect("/onboarding");
+
+  const weeklyGoal = profile.weeklyGoal ?? 5;
   const firstName = (dbUser?.name ?? session!.user?.name)?.split(" ")[0] ?? "Atleta";
   const initial = firstName[0]?.toUpperCase() ?? "A";
 
