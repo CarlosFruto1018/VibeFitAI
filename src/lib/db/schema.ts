@@ -5,6 +5,7 @@ import {
   integer,
   real,
   timestamp,
+  date,
   jsonb,
   boolean,
   index,
@@ -69,6 +70,9 @@ export const userProfiles = pgTable("user_profiles", {
   fitnessLevel: text("fitness_level").default("intermediate"), // beginner | intermediate | advanced
   preferredUnits: text("preferred_units").default("kg"),       // kg | lb
   bodyWeightKg: real("body_weight_kg"),
+  birthDate: date("birth_date"),                               // YYYY-MM-DD
+  heightCm: real("height_cm"),
+  weeklyGoal: integer("weekly_goal").default(5),               // sesiones/semana (meta del dashboard)
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 

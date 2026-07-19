@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { auth, signOut } from "@/lib/auth";
 import { db } from "@/lib/db/client";
-import { userProfiles, sessions } from "@/lib/db/schema";
+import { userProfiles, sessions, users } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { format } from "date-fns";
 import { TZDate } from "@date-fns/tz";
@@ -13,9 +13,15 @@ export default async function SettingsPage() {
   const session = await auth();
   const userId = session!.user!.id!;
 
-  const [profile, recentSessions] = await Promise.all([
+  // name/image se leen de la DB, no de la sesión: el JWT no se refresca al
+  // editarlos desde este mismo panel.
+  const [profile, dbUser, recentSessions] = await Promise.all([
     db.query.userProfiles.findFirst({
       where: eq(userProfiles.userId, userId),
+    }),
+    db.query.users.findFirst({
+      where: eq(users.id, userId),
+      columns: { name: true, image: true, email: true },
     }),
     db.query.sessions.findMany({
       where: eq(sessions.userId, userId),
@@ -29,7 +35,11 @@ export default async function SettingsPage() {
     await signOut({ redirectTo: "/" });
   }
 
-  const user = session!.user!;
+  const user = {
+    name: dbUser?.name ?? session!.user!.name ?? "Atleta",
+    image: dbUser?.image ?? session!.user!.image ?? null,
+    email: dbUser?.email ?? session!.user!.email ?? "",
+  };
   const tz = await getUserTimeZone();
 
   // Racha de días consecutivos con entrenamiento
@@ -94,8 +104,13 @@ export default async function SettingsPage() {
       {/* Ajustes */}
       <SettingsClient
         profile={{
+          name: user.name,
+          image: user.image,
           preferredUnits: profile?.preferredUnits === "lb" ? "lb" : "kg",
           bodyWeightKg: profile?.bodyWeightKg ?? null,
+          birthDate: profile?.birthDate ?? null,
+          heightCm: profile?.heightCm ?? null,
+          weeklyGoal: profile?.weeklyGoal ?? 5,
         }}
         signOutAction={handleSignOut}
       />

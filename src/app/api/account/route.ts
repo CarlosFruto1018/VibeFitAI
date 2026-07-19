@@ -7,6 +7,7 @@ import {
   exerciseAliases, exercises,
 } from "@/lib/db/schema";
 import { eq, inArray } from "drizzle-orm";
+import { isOwnedStorageKey } from "@/lib/validation";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
 
@@ -14,7 +15,27 @@ const ProfileSchema = z.object({
   preferredUnits: z.enum(["kg", "lb"]).optional(),
   bodyWeightKg: z.number().positive().max(500).optional(),
   goals: z.array(z.string().max(200)).max(20).optional(),
+  name: z.string().trim().min(1).max(100).optional(),
+  // Key del presign de R2 (nunca una URL arbitraria del cliente): se valida
+  // pertenencia y la URL pública se reconstruye server-side, igual que en /api/input.
+  imageKey: z.string().min(1).max(300).optional(),
+  birthDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Fecha no válida")
+    .nullable()
+    .optional(),
+  heightCm: z.number().min(80).max(250).nullable().optional(),
+  weeklyGoal: z.number().int().min(1).max(14).optional(),
 });
+
+function isReasonableBirthDate(value: string): boolean {
+  const d = new Date(`${value}T12:00:00Z`);
+  if (Number.isNaN(d.getTime())) return false;
+  const year = d.getUTCFullYear();
+  const now = new Date();
+  const age = now.getUTCFullYear() - year;
+  return year >= 1920 && age >= 13 && d.getTime() < now.getTime();
+}
 
 // PATCH /api/account — update profile
 export async function PATCH(req: NextRequest) {
@@ -27,10 +48,31 @@ export async function PATCH(req: NextRequest) {
     const parsed = ProfileSchema.safeParse(body);
     if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
 
-    await db
-      .insert(userProfiles)
-      .values({ userId, ...parsed.data })
-      .onConflictDoUpdate({ target: userProfiles.userId, set: parsed.data });
+    const { name, imageKey, birthDate, ...profileData } = parsed.data;
+
+    if (birthDate != null && !isReasonableBirthDate(birthDate)) {
+      return NextResponse.json({ error: "La fecha de nacimiento no es válida." }, { status: 400 });
+    }
+
+    if (imageKey !== undefined && !isOwnedStorageKey(imageKey, userId, "image")) {
+      return NextResponse.json({ error: "Imagen no válida" }, { status: 400 });
+    }
+
+    // name/image viven en users; el resto en user_profiles.
+    const userChanges: Partial<{ name: string; image: string }> = {};
+    if (name !== undefined) userChanges.name = name;
+    if (imageKey !== undefined) userChanges.image = `${process.env.R2_PUBLIC_URL}/${imageKey}`;
+    if (Object.keys(userChanges).length > 0) {
+      await db.update(users).set(userChanges).where(eq(users.id, userId));
+    }
+
+    const profileChanges = { ...profileData, ...(birthDate !== undefined && { birthDate }) };
+    if (Object.keys(profileChanges).length > 0) {
+      await db
+        .insert(userProfiles)
+        .values({ userId, ...profileChanges })
+        .onConflictDoUpdate({ target: userProfiles.userId, set: profileChanges });
+    }
 
     return NextResponse.json({ ok: true });
   } catch (err) {

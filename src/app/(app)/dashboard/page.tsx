@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db/client";
-import { sessions, personalRecords } from "@/lib/db/schema";
+import { sessions, personalRecords, userProfiles, users } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 import { subDays, format } from "date-fns";
 import { TZDate } from "@date-fns/tz";
@@ -11,14 +11,11 @@ import { Sparkles, Dumbbell, CalendarDays, ChevronRight, Trophy } from "lucide-r
 import Link from "next/link";
 import { cn, convertWeight, formatWeight } from "@/lib/utils";
 
-const WEEKLY_GOAL = 5;
 const DAY_LABELS = ["L", "M", "X", "J", "V", "S", "D"];
 
 export default async function DashboardPage() {
   const session = await auth();
   const userId = session!.user!.id!;
-  const firstName = session!.user?.name?.split(" ")[0] ?? "Atleta";
-  const initial = firstName[0]?.toUpperCase() ?? "A";
 
   // Todas las fechas en la zona horaria del usuario: el servidor corre en UTC
   // y sin esto "hoy" (y la semana entera) se corre un día por la noche.
@@ -29,7 +26,7 @@ export default async function DashboardPage() {
   const prevWeekStart = subDays(weekStart, 7);
   const todayIdx = now.getDay() === 0 ? 6 : now.getDay() - 1;
 
-  const [recentSessions, prs] = await Promise.all([
+  const [recentSessions, prs, profile, dbUser] = await Promise.all([
     db.query.sessions.findMany({
       where: eq(sessions.userId, userId),
       orderBy: desc(sessions.startedAt),
@@ -41,7 +38,20 @@ export default async function DashboardPage() {
       orderBy: desc(personalRecords.achievedAt),
       limit: 1,
     }),
+    db.query.userProfiles.findFirst({
+      where: eq(userProfiles.userId, userId),
+      columns: { weeklyGoal: true },
+    }),
+    // Nombre/foto frescos de la DB: la sesión JWT no se refresca al editarlos.
+    db.query.users.findFirst({
+      where: eq(users.id, userId),
+      columns: { name: true, image: true },
+    }),
   ]);
+
+  const weeklyGoal = profile?.weeklyGoal ?? 5;
+  const firstName = (dbUser?.name ?? session!.user?.name)?.split(" ")[0] ?? "Atleta";
+  const initial = firstName[0]?.toUpperCase() ?? "A";
 
   const weekSessions = recentSessions.filter((s) => new Date(s.startedAt) >= weekStart);
   const prevWeekSessions = recentSessions.filter((s) => {
@@ -67,7 +77,7 @@ export default async function DashboardPage() {
     return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
   });
 
-  const remaining = Math.max(0, WEEKLY_GOAL - weekSessions.length);
+  const remaining = Math.max(0, weeklyGoal - weekSessions.length);
   const topPr = prs[0];
 
   return (
@@ -77,7 +87,7 @@ export default async function DashboardPage() {
         <div>
           <h1 className="text-3xl font-black tracking-tight text-on-surface">¡Hola, {firstName}!</h1>
           <p className="text-sm text-on-surface-variant mt-1">
-            {weekSessions.length >= WEEKLY_GOAL
+            {weekSessions.length >= weeklyGoal
               ? "Tu progreso esta semana es excepcional."
               : weekSessions.length > 0
                 ? "Buen ritmo. Sigue así esta semana."
@@ -87,9 +97,14 @@ export default async function DashboardPage() {
         <Link
           href="/settings"
           aria-label="Ir a tu perfil"
-          className="hidden md:flex w-10 h-10 rounded-full bg-primary items-center justify-center text-on-primary text-sm font-bold ring-2 ring-white shadow-sm"
+          className="hidden md:flex w-10 h-10 rounded-full bg-primary items-center justify-center text-on-primary text-sm font-bold ring-2 ring-white shadow-sm overflow-hidden"
         >
-          {initial}
+          {dbUser?.image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={dbUser.image} alt="" className="w-full h-full object-cover" />
+          ) : (
+            initial
+          )}
         </Link>
       </section>
 
@@ -184,9 +199,9 @@ export default async function DashboardPage() {
             </span>
           </div>
           <h3 className="text-lg font-bold leading-tight">
-            {weekSessions.length >= WEEKLY_GOAL
+            {weekSessions.length >= weeklyGoal
               ? "Meta semanal cumplida 🎉"
-              : `Llevas ${weekSessions.length} de ${WEEKLY_GOAL} sesiones esta semana`}
+              : `Llevas ${weekSessions.length} de ${weeklyGoal} sesiones esta semana`}
           </h3>
           <p className="text-sm text-white/70">
             {remaining > 0
