@@ -1,0 +1,119 @@
+{
+  "common": {
+    "appName": "VibeFitAI"
+  },
+  "landing": {
+    "nav": {
+      "features": "Features",
+      "howItWorks": "How it works",
+      "privacy": "Privacy",
+      "login": "Log In"
+    },
+    "hero": {
+      "badge": "Voice · Photo · Text — you choose",
+      "titleLine1": "Log your workout",
+      "titleLine2": "in 5 seconds.",
+      "description": "Speak, snap a photo, or type. VibeFitAI extracts your sets, weights, and reps with AI — and shows you exactly how you're progressing.",
+      "ctaPrimary": "Start for free",
+      "ctaSecondary": "See how it works",
+      "disclaimer": "No credit card · Your account ready in under a minute."
+    },
+    "gallery": {
+      "title": "Built for the real gym",
+      "subtitle": "No excuses, no friction — grab your phone, speak or take a photo, and keep training."
+    },
+    "features": {
+      "title": "Technology designed for your progress",
+      "subtitle": "No forms, no friction. VibeFitAI does the heavy lifting so you can just train.",
+      "smartLog": {
+        "title": "Smart logging",
+        "desc": "Speak naturally, snap a photo of the gym whiteboard, or type it however you'd say it. VibeFitAI extracts sets, reps, and loads automatically."
+      },
+      "records": {
+        "title": "Instant records",
+        "desc": "Every set you log is compared against your history. The moment you beat a personal best, VibeFitAI lets you know right away."
+      },
+      "chat": {
+        "title": "Chat with your history",
+        "desc": "\"How much did I squat last Monday?\" — ask your data in plain language and get the answer instantly."
+      }
+    },
+    "howItWorks": {
+      "title": "The end of manual logging",
+      "subtitle": "Forget spreadsheets and messy notes. VibeFitAI processes natural language.",
+      "speak": {
+        "title": "Talk like you normally would",
+        "desc": "No templates, no dropdown menus. Type or say your workout exactly as it comes out, and the AI structures it for you.",
+        "example": "\"Log 3 sets of overhead press at 40kg for 12 reps\"",
+        "processed": "Processed successfully"
+      },
+      "records": {
+        "title": "Spots your records instantly",
+        "desc": "Every set is compared against your full history. The moment you beat a mark, VibeFitAI tells you right there on the logging screen."
+      },
+      "focus": "No nutrition plan. No distractions. Just your strength progress.",
+      "privacy": "Total privacy. Your data belongs to you and no one else."
+    },
+    "cta": {
+      "title": "Ready to train with superpowers?",
+      "button": "Create free account"
+    },
+    "footer": {
+      "tagline": "VibeFitAI · AI-powered workout logging",
+      "terms": "Terms",
+      "privacy": "Privacy",
+      "copyright": "© 2026 VibeFitAI"
+    }
+  },
+  "auth": {
+    "panel": {
+      "titleLine1": "Your potential,",
+      "titleLine2": "optimized by AI.",
+      "subtitle": "Join athletes using their real-time data to push past their limits every day.",
+      "copyright": "© 2026 VibeFitAI. All rights reserved.",
+      "features": {
+        "logging": { "title": "Voice & photo logging", "desc": "Say \"4 sets of bench press at 80kg\" or upload a photo — VibeFitAI saves it on its own." },
+        "progress": { "title": "Real progression", "desc": "Week-over-week load charts and instant record detection." },
+        "chat": { "title": "Chat with your data", "desc": "\"How much did I squat last Monday?\" — instant answers from your history." }
+      }
+    },
+    "form": {
+      "title": "Start your journey",
+      "subtitle": "Create an account or log in to unlock the power of AI in your training.",
+      "continueWithGoogle": "Continue with Google",
+      "orContinueWithEmail": "Or continue with email",
+      "termsPrefix": "By continuing you agree to the",
+      "termsLink": "Terms of Service",
+      "and": "and",
+      "privacyLink": "Privacy Policy",
+      "termsSuffix": "of VibeFitAI.",
+      "tabs": { "login": "Log In", "register": "Sign Up" },
+      "forgotHint": "Enter your email and we'll send you a 6-digit code to confirm it's you and choose a new password.",
+      "labels": { "name": "Full name", "email": "Email address", "password": "Password", "confirmPassword": "Confirm password" },
+      "placeholders": { "name": "E.g. John Doe", "email": "name@example.com", "passwordLogin": "Your password", "passwordRegister": "At least 8 characters", "confirmPassword": "Repeat your password" },
+      "errors": { "passwordMismatch": "Passwords don't match.", "loginFailed": "Incorrect email or password.", "registerFailed": "We couldn't create your account.", "codeFailed": "We couldn't send the code.", "connection": "Connection error. Try again." },
+      "submit": { "login": "Log In →", "register": "Create Account →", "forgot": "Send me the code" },
+      "forgotPassword": "Forgot your password?",
+      "backToLogin": "Back to log in"
+    },
+    "reset": {
+      "title": "Confirm your code",
+      "subtitle": "Enter the 6-digit code we emailed you, along with the password you want to use from now on.",
+      "backToLogin": "Back to log in",
+      "missingEmail": "The email is missing from the link. Go back to",
+      "requestCode": "request the code",
+      "fromLogin": "from the login screen.",
+      "codeLabel": "6-digit code",
+      "verifyCode": "Verify code →",
+      "resendCode": "Resend code",
+      "resent": "We sent you a new code.",
+      "newPasswordPlaceholder": "New password (min. 8 characters)",
+      "confirmPasswordPlaceholder": "Repeat the password",
+      "savePassword": "Save password →",
+      "backToCode": "Go back and edit the code",
+      "done": "Password updated. Logging you in...",
+      "goToLogin": "Go to login",
+      "errors": { "verify": "We couldn't verify the code.", "passwordMismatch": "Passwords don't match.", "reset": "We couldn't reset your password.", "connection": "Connection error. Try again." }
+    }
+  }
+}

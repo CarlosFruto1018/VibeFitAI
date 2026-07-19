@@ -2,10 +2,12 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Sliders, Scale, Ruler, Target, CalendarDays, Camera, LogOut, Trash2, CheckCircle, XCircle, Loader2, User } from "lucide-react";
+import { Sliders, Scale, Ruler, Target, CalendarDays, Camera, LogOut, Trash2, CheckCircle, XCircle, Loader2, User, Languages } from "lucide-react";
 import { cn, displayWeight, toKg, type WeightUnit } from "@/lib/utils";
+import { LOCALE_COOKIE, type Locale } from "@/i18n/config";
 
 interface Props {
+  locale: Locale;
   profile: {
     name: string;
     image: string | null;
@@ -18,14 +20,29 @@ interface Props {
   signOutAction: () => Promise<void>;
 }
 
+const LANGUAGE_OPTIONS: { id: Locale; label: string }[] = [
+  { id: "es", label: "Español" },
+  { id: "en", label: "English" },
+];
+
 const FIELD =
   "bg-surface-container-low border border-outline-variant rounded-xl px-3 py-2.5 text-sm text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent disabled:opacity-50 w-full";
 
 const LABEL = "text-xs font-medium text-on-surface-variant flex items-center gap-1.5";
 
-export function SettingsClient({ profile, signOutAction }: Props) {
+export function SettingsClient({ locale, profile, signOutAction }: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [changingLocale, setChangingLocale] = useState<Locale | null>(null);
+
+  function handleLocaleChange(next: Locale) {
+    if (next === locale) return;
+    setChangingLocale(next);
+    // Cookie legible por next-intl en el servidor (mismo patrón que TimezoneSync
+    // con `tz`); recarga completa para que los server components la tomen.
+    document.cookie = `${LOCALE_COOKIE}=${next}; path=/; max-age=31536000; samesite=lax`;
+    window.location.reload();
+  }
 
   const [name, setName] = useState(profile.name);
   const [birthDate, setBirthDate] = useState(profile.birthDate ?? "");
@@ -234,6 +251,37 @@ export function SettingsClient({ profile, signOutAction }: Props) {
               className={FIELD}
             />
           </div>
+        </div>
+      </section>
+
+      {/* Idioma */}
+      <section className="bg-white border border-outline-variant/70 rounded-2xl overflow-hidden shadow-card">
+        <div className="flex items-center gap-3 px-4 pt-4 pb-3 border-b border-outline-variant/40">
+          <div className="w-9 h-9 rounded-xl bg-primary-container/50 flex items-center justify-center">
+            <Languages size={15} className="text-on-primary-container" />
+          </div>
+          <div>
+            <h2 className="text-sm font-semibold text-on-surface">Idioma</h2>
+            <p className="text-[11px] text-on-surface-variant">Idioma de la aplicación</p>
+          </div>
+        </div>
+        <div className="p-4 flex gap-1.5">
+          {LANGUAGE_OPTIONS.map((opt) => (
+            <button
+              key={opt.id}
+              onClick={() => handleLocaleChange(opt.id)}
+              disabled={changingLocale !== null}
+              className={cn(
+                "flex-1 py-2.5 rounded-xl text-xs font-medium transition-all active:scale-[0.98] disabled:opacity-60 flex items-center justify-center gap-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
+                locale === opt.id
+                  ? "bg-primary text-white shadow-sm"
+                  : "bg-surface-container-low text-on-surface-variant hover:bg-surface-container hover:text-on-surface"
+              )}
+            >
+              {changingLocale === opt.id && <Loader2 size={12} className="animate-spin" />}
+              {opt.label}
+            </button>
+          ))}
         </div>
       </section>
 

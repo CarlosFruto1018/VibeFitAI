@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { Dumbbell } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 
-const LINKS = [
-  { href: "#caracteristicas", label: "Características" },
-  { href: "#como-funciona", label: "Cómo funciona" },
-  { href: "/privacidad", label: "Privacidad" },
-];
+export async function LandingNav() {
+  const t = await getTranslations("landing.nav");
+  const LINKS = [
+    { href: "#caracteristicas", label: t("features") },
+    { href: "#como-funciona", label: t("howItWorks") },
+    { href: "/privacidad", label: t("privacy") },
+  ];
 
-export function LandingNav() {
   return (
     <header className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-outline-variant/50">
       <div className="max-w-6xl mx-auto px-5 sm:px-6 h-16 flex items-center justify-between">
@@ -32,7 +34,7 @@ export function LandingNav() {
           href="/login"
           className="bg-primary hover:bg-primary/90 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
         >
-          Iniciar Sesión
+          {t("login")}
         </Link>
       </div>
     </header>

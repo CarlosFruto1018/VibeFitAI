@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { Mic, Trophy, MessageCircle, Lock, ArrowRight, Sparkles } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { LandingNav } from "@/components/landing/LandingNav";
 import { IPhoneFrame } from "@/components/landing/IPhoneFrame";
@@ -13,24 +14,6 @@ export const metadata: Metadata = {
   description:
     "Habla, saca una foto o escribe. VibeFitAI extrae tus series, pesos y reps con IA, detecta tus récords y te deja preguntarle a tu historial.",
 };
-
-const FEATURES = [
-  {
-    icon: Mic,
-    title: "Registro inteligente",
-    desc: "Habla de forma natural, saca una foto a la pizarra del gym o escríbelo como lo dirías. VibeFitAI extrae series, repeticiones y cargas automáticamente.",
-  },
-  {
-    icon: Trophy,
-    title: "Récords al instante",
-    desc: "Cada serie que registras se compara con tu historial. En cuanto superas una marca personal, VibeFitAI te avisa en el momento.",
-  },
-  {
-    icon: MessageCircle,
-    title: "Chat con tu historial",
-    desc: "«¿Cuánto hice en sentadilla el lunes?» — pregúntale a tus datos en lenguaje natural y obtén la respuesta al momento.",
-  },
-];
 
 // La landing consulta la sesión (headers) en cada request; declararla dinámica
 // evita que Next intente prerenderizarla y que el try/catch de abajo se trague
@@ -48,6 +31,14 @@ export default async function LandingPage() {
   }
   if (session?.user) redirect("/dashboard");
 
+  const t = await getTranslations("landing");
+
+  const FEATURES = [
+    { icon: Mic, title: t("features.smartLog.title"), desc: t("features.smartLog.desc") },
+    { icon: Trophy, title: t("features.records.title"), desc: t("features.records.desc") },
+    { icon: MessageCircle, title: t("features.chat.title"), desc: t("features.chat.desc") },
+  ];
+
   return (
     <div className="min-h-dvh bg-background text-on-surface">
       <LandingNav />
@@ -57,34 +48,33 @@ export default async function LandingPage() {
         <div>
           <span className="inline-flex items-center gap-1.5 text-[11px] font-mono font-semibold text-on-primary-container bg-primary-container px-3 py-1.5 rounded-full mb-5">
             <Sparkles size={12} />
-            Voz · Foto · Texto — tú eliges
+            {t("hero.badge")}
           </span>
           <h1 className="text-4xl sm:text-5xl font-black tracking-tight leading-[1.08] mb-5 [text-wrap:balance]">
-            Registra tu gym
+            {t("hero.titleLine1")}
             <br />
-            <span className="text-accent">en 5 segundos.</span>
+            <span className="text-accent">{t("hero.titleLine2")}</span>
           </h1>
           <p className="text-base text-on-surface-variant leading-relaxed mb-8 max-w-md [text-wrap:pretty]">
-            Habla, saca una foto o escribe. VibeFitAI extrae tus series, pesos y reps con IA — y te muestra
-            exactamente cómo progresas.
+            {t("hero.description")}
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Link
               href="/login?mode=register"
               className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-white font-semibold px-6 py-3.5 rounded-xl text-sm shadow-lg shadow-primary/15 transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
             >
-              Empezar gratis
+              {t("hero.ctaPrimary")}
               <ArrowRight size={16} />
             </Link>
             <a
               href="#como-funciona"
               className="inline-flex items-center justify-center gap-2 bg-white border border-outline-variant hover:border-outline text-on-surface font-semibold px-6 py-3.5 rounded-xl text-sm transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
-              Ver cómo funciona
+              {t("hero.ctaSecondary")}
             </a>
           </div>
           <p className="text-xs text-on-surface-variant/80 mt-5">
-            Sin tarjeta de crédito · Tu cuenta lista en menos de un minuto.
+            {t("hero.disclaimer")}
           </p>
         </div>
 
@@ -102,10 +92,10 @@ export default async function LandingPage() {
       <section id="caracteristicas" className="max-w-6xl mx-auto px-5 sm:px-6 py-16 lg:py-20">
         <div className="text-center max-w-xl mx-auto mb-12">
           <h2 className="text-2xl sm:text-3xl font-black tracking-tight mb-3 [text-wrap:balance]">
-            Tecnología diseñada para tu progreso
+            {t("features.title")}
           </h2>
           <p className="text-sm text-on-surface-variant leading-relaxed [text-wrap:pretty]">
-            Sin formularios, sin fricción. VibeFitAI hace el trabajo pesado para que tú solo entrenes.
+            {t("features.subtitle")}
           </p>
         </div>
 
@@ -130,10 +120,10 @@ export default async function LandingPage() {
         <div className="max-w-6xl mx-auto px-5 sm:px-6 py-16 lg:py-20">
           <div className="text-center max-w-xl mx-auto mb-12">
             <h2 className="text-2xl sm:text-3xl font-black tracking-tight mb-3 [text-wrap:balance]">
-              El final del registro manual
+              {t("howItWorks.title")}
             </h2>
             <p className="text-sm text-on-surface-variant leading-relaxed [text-wrap:pretty]">
-              Olvídate de las hojas de cálculo y las notas desordenadas. VibeFitAI procesa lenguaje natural.
+              {t("howItWorks.subtitle")}
             </p>
           </div>
 
@@ -141,19 +131,18 @@ export default async function LandingPage() {
             {/* Tarjeta blanca — extracción por IA */}
             <div className="bg-white rounded-2xl p-6 shadow-card flex flex-col justify-between lg:col-start-1 lg:row-start-1 lg:row-span-2">
               <div>
-                <h3 className="text-lg font-bold text-on-surface mb-2">Habla como lo dirías</h3>
+                <h3 className="text-lg font-bold text-on-surface mb-2">{t("howItWorks.speak.title")}</h3>
                 <p className="text-sm text-on-surface-variant leading-relaxed [text-wrap:pretty]">
-                  Sin plantillas ni menús desplegables. Escribe o di tu entrenamiento tal cual te sale, y
-                  la IA lo estructura por ti.
+                  {t("howItWorks.speak.desc")}
                 </p>
               </div>
               <div className="mt-6 bg-surface-container-low rounded-xl px-4 py-3">
                 <p className="text-xs text-on-surface italic leading-relaxed">
-                  «Registra 3 series de press militar con 40 kilos a 12 reps»
+                  {t("howItWorks.speak.example")}
                 </p>
                 <p className="text-[10px] font-semibold text-primary flex items-center gap-1.5 mt-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-primary" />
-                  Procesado exitosamente
+                  {t("howItWorks.speak.processed")}
                 </p>
               </div>
             </div>
@@ -162,10 +151,9 @@ export default async function LandingPage() {
             <div className="relative overflow-hidden bg-accent rounded-2xl p-6 text-white flex flex-col justify-between lg:col-start-2 lg:col-span-2 lg:row-start-1">
               <div className="absolute -right-8 -top-8 w-32 h-32 bg-white/10 blur-3xl rounded-full" />
               <div className="relative">
-                <h3 className="text-lg font-bold mb-2">Detecta tus récords al momento</h3>
+                <h3 className="text-lg font-bold mb-2">{t("howItWorks.records.title")}</h3>
                 <p className="text-sm text-white/70 leading-relaxed max-w-md [text-wrap:pretty]">
-                  Cada serie se compara contra tu historial completo. En cuanto superas una marca, VibeFitAI
-                  te lo dice en la misma pantalla de registro.
+                  {t("howItWorks.records.desc")}
                 </p>
               </div>
               <Trophy size={28} className="relative self-end text-white/80" />
@@ -174,7 +162,7 @@ export default async function LandingPage() {
             {/* Tarjeta navy — posicionamiento */}
             <div className="bg-primary rounded-2xl p-6 flex items-center lg:col-start-2 lg:row-start-2">
               <p className="text-white text-lg font-bold leading-snug [text-wrap:balance]">
-                Sin plan de nutrición. Sin distracciones. Solo tu progreso de fuerza.
+                {t("howItWorks.focus")}
               </p>
             </div>
 
@@ -182,7 +170,7 @@ export default async function LandingPage() {
             <div className="bg-surface-container rounded-2xl p-6 flex flex-col justify-center gap-3 lg:col-start-3 lg:row-start-2">
               <Lock size={20} className="text-on-surface-variant" />
               <p className="text-sm font-medium text-on-surface leading-relaxed [text-wrap:pretty]">
-                Privacidad total. Tus datos son tuyos y de nadie más.
+                {t("howItWorks.privacy")}
               </p>
             </div>
           </div>
@@ -195,13 +183,13 @@ export default async function LandingPage() {
           <div aria-hidden className="absolute -top-16 left-1/4 w-72 h-72 bg-accent/25 rounded-full blur-3xl" />
           <div aria-hidden className="absolute -bottom-16 right-1/4 w-72 h-72 bg-inverse-primary/10 rounded-full blur-3xl" />
           <h2 className="relative text-2xl sm:text-4xl font-black tracking-tight text-white mb-8 [text-wrap:balance]">
-            ¿Listo para entrenar con superpoderes?
+            {t("cta.title")}
           </h2>
           <Link
             href="/login?mode=register"
             className="relative inline-flex items-center gap-2 bg-white hover:bg-white/90 text-primary font-semibold px-7 py-3.5 rounded-full text-sm transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
           >
-            Crear cuenta gratuita
+            {t("cta.button")}
             <ArrowRight size={16} />
           </Link>
         </div>
@@ -215,13 +203,13 @@ export default async function LandingPage() {
               <span className="text-white font-black text-[9px]">F</span>
             </div>
             <span className="text-on-surface-variant text-xs font-medium">
-              VibeFitAI · Registro de entrenamientos con IA
+              {t("footer.tagline")}
             </span>
           </div>
           <div className="flex items-center gap-4 text-xs text-on-surface-variant/80">
-            <Link href="/terminos" className="hover:text-on-surface transition-colors">Términos</Link>
-            <Link href="/privacidad" className="hover:text-on-surface transition-colors">Privacidad</Link>
-            <span className="text-outline">© 2026 VibeFitAI</span>
+            <Link href="/terminos" className="hover:text-on-surface transition-colors">{t("footer.terms")}</Link>
+            <Link href="/privacidad" className="hover:text-on-surface transition-colors">{t("footer.privacy")}</Link>
+            <span className="text-outline">{t("footer.copyright")}</span>
           </div>
         </div>
       </footer>

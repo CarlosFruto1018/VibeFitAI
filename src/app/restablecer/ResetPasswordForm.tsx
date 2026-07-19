@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { Loader2, CheckCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 const FIELD =
   "w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 transition-shadow duration-200 focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent disabled:opacity-50 " +
@@ -20,6 +21,8 @@ const SUBMIT =
 type Step = "code" | "password";
 
 export function ResetPasswordForm() {
+  const t = useTranslations("auth.reset");
+  const tForm = useTranslations("auth.form");
   const searchParams = useSearchParams();
   const email = (searchParams.get("email") ?? "").trim().toLowerCase();
 
@@ -35,11 +38,11 @@ export function ResetPasswordForm() {
   if (!email) {
     return (
       <div className="bg-red-50 dark:bg-red-500/10 rounded-xl px-4 py-3 text-sm text-red-600 dark:text-red-400">
-        Falta el correo en el enlace. Vuelve a{" "}
+        {t("missingEmail")}{" "}
         <Link href="/login" className="underline underline-offset-2 font-medium">
-          solicitar el código
+          {t("requestCode")}
         </Link>{" "}
-        desde el inicio de sesión.
+        {t("fromLogin")}
       </div>
     );
   }
@@ -57,12 +60,12 @@ export function ResetPasswordForm() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(typeof data.error === "string" ? data.error : "No pudimos verificar el código.");
+        setError(typeof data.error === "string" ? data.error : t("errors.verify"));
         return;
       }
       setStep("password");
     } catch {
-      setError("Error de conexión. Intenta de nuevo.");
+      setError(t("errors.connection"));
     } finally {
       setBusy(false);
     }
@@ -73,7 +76,7 @@ export function ResetPasswordForm() {
     if (busy) return;
     setError(null);
     if (password !== confirm) {
-      setError("Las contraseñas no coinciden.");
+      setError(t("errors.passwordMismatch"));
       return;
     }
     setBusy(true);
@@ -85,7 +88,7 @@ export function ResetPasswordForm() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(typeof data.error === "string" ? data.error : "No pudimos restablecer tu contraseña.");
+        setError(typeof data.error === "string" ? data.error : t("errors.reset"));
         // El código pudo caducar entre pasos: regresa a pedirlo de nuevo.
         setStep("code");
         return;
@@ -95,7 +98,7 @@ export function ResetPasswordForm() {
       const login = await signIn("credentials", { email, password, redirect: false });
       if (!login?.error) window.location.href = "/dashboard";
     } catch {
-      setError("Error de conexión. Intenta de nuevo.");
+      setError(t("errors.connection"));
     } finally {
       setBusy(false);
     }
@@ -114,7 +117,7 @@ export function ResetPasswordForm() {
       });
       if (res.ok) setResent(true);
     } catch {
-      setError("Error de conexión. Intenta de nuevo.");
+      setError(t("errors.connection"));
     } finally {
       setBusy(false);
     }
@@ -125,9 +128,9 @@ export function ResetPasswordForm() {
       <div className="flex items-start gap-2 bg-primary-container/70 dark:bg-accent/10 rounded-xl px-4 py-3 text-sm text-on-primary-container dark:text-inverse-primary animate-fade-in">
         <CheckCircle size={16} className="shrink-0 mt-0.5" />
         <p>
-          Contraseña actualizada. Entrando a tu cuenta...{" "}
+          {t("done")}{" "}
           <Link href="/login" className="underline underline-offset-2 font-medium">
-            Ir al inicio de sesión
+            {t("goToLogin")}
           </Link>
         </p>
       </div>
@@ -138,7 +141,7 @@ export function ResetPasswordForm() {
   const emailDisplay = (
     <div
       className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500 dark:bg-slate-800/60 dark:border-slate-700 dark:text-slate-400"
-      aria-label="Correo electrónico"
+      aria-label={tForm("labels.email")}
     >
       {email}
     </div>
@@ -159,7 +162,7 @@ export function ResetPasswordForm() {
           required
           maxLength={6}
           disabled={busy}
-          aria-label="Código de 6 dígitos"
+          aria-label={t("codeLabel")}
           className={CODE_FIELD}
         />
 
@@ -171,12 +174,12 @@ export function ResetPasswordForm() {
 
         {resent && !error && (
           <p className="text-xs text-on-primary-container dark:text-inverse-primary bg-primary-container/70 dark:bg-accent/10 rounded-xl px-3 py-2 animate-fade-in">
-            Te enviamos un código nuevo.
+            {t("resent")}
           </p>
         )}
 
         <button type="submit" disabled={busy || code.length !== 6} className={SUBMIT}>
-          {busy ? <Loader2 size={15} className="animate-spin inline" /> : "Verificar código →"}
+          {busy ? <Loader2 size={15} className="animate-spin inline" /> : t("verifyCode")}
         </button>
 
         <button
@@ -185,7 +188,7 @@ export function ResetPasswordForm() {
           disabled={busy}
           className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 underline underline-offset-2 transition-colors self-center disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
         >
-          Reenviar código
+          {t("resendCode")}
         </button>
       </form>
     );
@@ -198,12 +201,12 @@ export function ResetPasswordForm() {
         type="password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        placeholder="Nueva contraseña (mínimo 8 caracteres)"
+        placeholder={t("newPasswordPlaceholder")}
         autoComplete="new-password"
         required
         minLength={8}
         disabled={busy}
-        aria-label="Nueva contraseña"
+        aria-label={t("newPasswordPlaceholder")}
         autoFocus
         className={FIELD}
       />
@@ -211,12 +214,12 @@ export function ResetPasswordForm() {
         type="password"
         value={confirm}
         onChange={(e) => setConfirm(e.target.value)}
-        placeholder="Repite la contraseña"
+        placeholder={t("confirmPasswordPlaceholder")}
         autoComplete="new-password"
         required
         minLength={8}
         disabled={busy}
-        aria-label="Confirmar nueva contraseña"
+        aria-label={t("confirmPasswordPlaceholder")}
         className={FIELD}
       />
 
@@ -227,7 +230,7 @@ export function ResetPasswordForm() {
       )}
 
       <button type="submit" disabled={busy} className={SUBMIT}>
-        {busy ? <Loader2 size={15} className="animate-spin inline" /> : "Guardar contraseña →"}
+        {busy ? <Loader2 size={15} className="animate-spin inline" /> : t("savePassword")}
       </button>
 
       <button
@@ -236,7 +239,7 @@ export function ResetPasswordForm() {
         disabled={busy}
         className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 underline underline-offset-2 transition-colors self-center disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
       >
-        Volver a escribir el código
+        {t("backToCode")}
       </button>
     </form>
   );

@@ -1,13 +1,15 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { Dumbbell, KeyRound, ArrowLeft } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { ResetPasswordForm } from "./ResetPasswordForm";
 
 export const metadata = {
   title: "Restablecer contraseña · VibeFitAI",
 };
 
-export default function ResetPasswordPage() {
+export default async function ResetPasswordPage() {
+  const t = await getTranslations("auth.reset");
   return (
     <div className="min-h-dvh bg-background text-on-surface flex flex-col items-center justify-center p-4">
       <main className="w-full max-w-md flex flex-col items-center">
@@ -25,11 +27,10 @@ export default function ResetPasswordPage() {
             <KeyRound size={26} className="text-primary" />
           </div>
           <h1 className="text-xl font-black tracking-tight text-center mb-2 [text-wrap:balance]">
-            Confirma tu código
+            {t("title")}
           </h1>
           <p className="text-sm text-on-surface-variant text-center mb-6 leading-relaxed [text-wrap:pretty]">
-            Escribe el código de 6 dígitos que te enviamos por correo, junto con la contraseña que quieres
-            usar a partir de ahora.
+            {t("subtitle")}
           </p>
 
           <Suspense fallback={null}>
@@ -41,7 +42,7 @@ export default function ResetPasswordPage() {
             className="mt-6 flex items-center gap-2 text-xs font-medium text-on-surface-variant hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
           >
             <ArrowLeft size={13} />
-            Volver al inicio de sesión
+            {t("backToLogin")}
           </Link>
         </section>
 

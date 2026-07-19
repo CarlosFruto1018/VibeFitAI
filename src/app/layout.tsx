@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale } from "next-intl/server";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import "./globals.css";
 
@@ -29,15 +31,19 @@ export const viewport: Viewport = {
   themeColor: "#131b2e",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const locale = await getLocale();
+
   return (
-    <html lang="es">
+    <html lang={locale}>
       <head>
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body className={`${hanken.variable} ${jetbrains.variable} font-sans bg-background text-on-background antialiased`}>
-        <ServiceWorkerRegister />
-        {children}
+        <NextIntlClientProvider>
+          <ServiceWorkerRegister />
+          {children}
+        </NextIntlClientProvider>
       </body>
     </html>
   );

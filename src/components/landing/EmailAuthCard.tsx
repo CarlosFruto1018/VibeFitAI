@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { Loader2, MailCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +20,7 @@ const SUBMIT =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 dark:focus-visible:ring-offset-slate-900";
 
 export function EmailAuthCard({ defaultMode = "login" }: { defaultMode?: "login" | "register" }) {
+  const t = useTranslations("auth.form");
   const [mode, setMode] = useState<Mode>(defaultMode);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -42,7 +44,7 @@ export function EmailAuthCard({ defaultMode = "login" }: { defaultMode?: "login"
       redirect: false,
     });
     if (res?.error) {
-      setError("Correo o contraseña incorrectos.");
+      setError(t("errors.loginFailed"));
       return;
     }
     window.location.href = "/dashboard";
@@ -59,7 +61,7 @@ export function EmailAuthCard({ defaultMode = "login" }: { defaultMode?: "login"
         await doLogin(email, password);
       } else if (mode === "register") {
         if (password !== confirmPassword) {
-          setError("Las contraseñas no coinciden.");
+          setError(t("errors.passwordMismatch"));
           return;
         }
         const res = await fetch("/api/auth/register", {
@@ -69,7 +71,7 @@ export function EmailAuthCard({ defaultMode = "login" }: { defaultMode?: "login"
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-          setError(typeof data.error === "string" ? data.error : "No pudimos crear tu cuenta.");
+          setError(typeof data.error === "string" ? data.error : t("errors.registerFailed"));
           return;
         }
         // Cuenta creada: entra directamente.
@@ -84,13 +86,13 @@ export function EmailAuthCard({ defaultMode = "login" }: { defaultMode?: "login"
         });
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
-          setError(typeof data.error === "string" ? data.error : "No pudimos enviar el código.");
+          setError(typeof data.error === "string" ? data.error : t("errors.codeFailed"));
           return;
         }
         window.location.href = `/restablecer?email=${encodeURIComponent(email)}`;
       }
     } catch {
-      setError("Error de conexión. Intenta de nuevo.");
+      setError(t("errors.connection"));
     } finally {
       setBusy(false);
     }
@@ -101,43 +103,42 @@ export function EmailAuthCard({ defaultMode = "login" }: { defaultMode?: "login"
       {/* Selector entrar / crear cuenta */}
       <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 rounded-xl p-1" role="tablist">
         {([
-          { id: "login", label: "Entrar" },
-          { id: "register", label: "Crear cuenta" },
-        ] as const).map((t) => (
+          { id: "login", label: t("tabs.login") },
+          { id: "register", label: t("tabs.register") },
+        ] as const).map((tab) => (
           <button
-            key={t.id}
+            key={tab.id}
             type="button"
             role="tab"
-            aria-selected={mode === t.id}
-            onClick={() => switchMode(t.id)}
+            aria-selected={mode === tab.id}
+            onClick={() => switchMode(tab.id)}
             className={cn(
               "flex-1 py-2 rounded-lg text-xs font-semibold transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent",
-              mode === t.id
+              mode === tab.id
                 ? "bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-white"
                 : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
             )}
           >
-            {t.label}
+            {tab.label}
           </button>
         ))}
       </div>
 
       {mode === "forgot" && (
         <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-          Escribe tu correo y te enviaremos un código de 6 dígitos para confirmar que eres tú y elegir una
-          contraseña nueva.
+          {t("forgotHint")}
         </p>
       )}
 
       {mode === "register" && (
         <div>
-          <label htmlFor="auth-name" className={LABEL}>Nombre completo</label>
+          <label htmlFor="auth-name" className={LABEL}>{t("labels.name")}</label>
           <input
             id="auth-name"
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Ej: Juan Pérez"
+            placeholder={t("placeholders.name")}
             autoComplete="name"
             required
             disabled={busy}
@@ -147,13 +148,13 @@ export function EmailAuthCard({ defaultMode = "login" }: { defaultMode?: "login"
       )}
 
       <div>
-        <label htmlFor="auth-email" className={LABEL}>Correo electrónico</label>
+        <label htmlFor="auth-email" className={LABEL}>{t("labels.email")}</label>
         <input
           id="auth-email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="nombre@ejemplo.com"
+          placeholder={t("placeholders.email")}
           autoComplete="email"
           required
           disabled={busy}
@@ -163,13 +164,13 @@ export function EmailAuthCard({ defaultMode = "login" }: { defaultMode?: "login"
 
       {mode !== "forgot" && (
         <div>
-          <label htmlFor="auth-password" className={LABEL}>Contraseña</label>
+          <label htmlFor="auth-password" className={LABEL}>{t("labels.password")}</label>
           <input
             id="auth-password"
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder={mode === "register" ? "Mínimo 8 caracteres" : "Tu contraseña"}
+            placeholder={mode === "register" ? t("placeholders.passwordRegister") : t("placeholders.passwordLogin")}
             autoComplete={mode === "register" ? "new-password" : "current-password"}
             required
             minLength={8}
@@ -181,13 +182,13 @@ export function EmailAuthCard({ defaultMode = "login" }: { defaultMode?: "login"
 
       {mode === "register" && (
         <div>
-          <label htmlFor="auth-confirm-password" className={LABEL}>Confirmar contraseña</label>
+          <label htmlFor="auth-confirm-password" className={LABEL}>{t("labels.confirmPassword")}</label>
           <input
             id="auth-confirm-password"
             type="password"
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            placeholder="Repite tu contraseña"
+            placeholder={t("placeholders.confirmPassword")}
             autoComplete="new-password"
             required
             minLength={8}
@@ -214,11 +215,11 @@ export function EmailAuthCard({ defaultMode = "login" }: { defaultMode?: "login"
         {busy ? (
           <Loader2 size={15} className="animate-spin inline" />
         ) : mode === "login" ? (
-          "Entrar →"
+          t("submit.login")
         ) : mode === "register" ? (
-          "Crear Cuenta →"
+          t("submit.register")
         ) : (
-          "Enviarme el código"
+          t("submit.forgot")
         )}
       </button>
 
@@ -228,7 +229,7 @@ export function EmailAuthCard({ defaultMode = "login" }: { defaultMode?: "login"
           onClick={() => switchMode("forgot")}
           className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 underline underline-offset-2 transition-colors self-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
         >
-          ¿Olvidaste tu contraseña?
+          {t("forgotPassword")}
         </button>
       )}
 
@@ -238,7 +239,7 @@ export function EmailAuthCard({ defaultMode = "login" }: { defaultMode?: "login"
           onClick={() => switchMode("login")}
           className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 underline underline-offset-2 transition-colors self-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent rounded"
         >
-          Volver a iniciar sesión
+          {t("backToLogin")}
         </button>
       )}
     </form>

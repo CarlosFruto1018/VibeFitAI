@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { signIn } from "@/lib/auth";
 import { Dumbbell, Mic, TrendingUp, MessageCircle } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { EmailAuthCard } from "@/components/landing/EmailAuthCard";
 
 const GoogleIcon = () => (
@@ -12,24 +13,6 @@ const GoogleIcon = () => (
   </svg>
 );
 
-const FEATURES = [
-  {
-    icon: Mic,
-    title: "Registro por voz y foto",
-    desc: "Di «4 series de press banca con 80 kilos» o sube una foto — VibeFitAI lo guarda solo.",
-  },
-  {
-    icon: TrendingUp,
-    title: "Progresión real",
-    desc: "Gráficas de carga semana a semana y detección de récords al instante.",
-  },
-  {
-    icon: MessageCircle,
-    title: "Chat con tu data",
-    desc: "«¿Cuánto hice en sentadilla el lunes?» — respuesta inmediata de tu historial.",
-  },
-];
-
 export default async function LoginPage({
   searchParams,
 }: {
@@ -37,6 +20,13 @@ export default async function LoginPage({
 }) {
   const { mode } = await searchParams;
   const defaultMode = mode === "register" ? "register" : "login";
+  const t = await getTranslations("auth");
+
+  const FEATURES = [
+    { icon: Mic, title: t("panel.features.logging.title"), desc: t("panel.features.logging.desc") },
+    { icon: TrendingUp, title: t("panel.features.progress.title"), desc: t("panel.features.progress.desc") },
+    { icon: MessageCircle, title: t("panel.features.chat.title"), desc: t("panel.features.chat.desc") },
+  ];
 
   return (
     <div className="min-h-dvh bg-background flex items-center justify-center p-4 lg:p-10">
@@ -54,12 +44,12 @@ export default async function LoginPage({
 
           <div className="relative">
             <h1 className="text-4xl font-black tracking-tight leading-[1.1] mb-4 [text-wrap:balance]">
-              Tu potencial,
+              {t("panel.titleLine1")}
               <br />
-              optimizado por IA.
+              {t("panel.titleLine2")}
             </h1>
             <p className="text-sm text-white/60 max-w-sm mb-10 leading-relaxed">
-              Únete a los deportistas que usan sus datos en tiempo real para superar sus límites todos los días.
+              {t("panel.subtitle")}
             </p>
 
             <div className="flex flex-col gap-5">
@@ -78,7 +68,7 @@ export default async function LoginPage({
           </div>
 
           <p className="relative text-[10px] font-mono text-white/30">
-            © 2026 VibeFitAI. Todos los derechos reservados.
+            {t("panel.copyright")}
           </p>
         </section>
 
@@ -92,10 +82,10 @@ export default async function LoginPage({
 
           <div className="max-w-sm w-full mx-auto">
             <h2 className="text-2xl font-black tracking-tight text-on-surface text-center lg:text-left">
-              Comienza tu viaje
+              {t("form.title")}
             </h2>
             <p className="text-sm text-on-surface-variant mt-1.5 mb-7 text-center lg:text-left [text-wrap:pretty]">
-              Crea una cuenta o entra para desbloquear el poder de la IA en tu entrenamiento.
+              {t("form.subtitle")}
             </p>
 
             <form
@@ -109,14 +99,14 @@ export default async function LoginPage({
                 className="w-full flex items-center justify-center gap-3 bg-white border border-outline-variant hover:border-outline text-on-surface font-semibold py-3 rounded-xl text-sm shadow-sm transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
               >
                 <GoogleIcon />
-                Continuar con Google
+                {t("form.continueWithGoogle")}
               </button>
             </form>
 
             <div className="flex items-center gap-3 my-6">
               <div className="flex-1 h-px bg-outline-variant" />
               <span className="text-[10px] font-mono font-semibold text-on-surface-variant/70 uppercase tracking-widest">
-                O continúa con email
+                {t("form.orContinueWithEmail")}
               </span>
               <div className="flex-1 h-px bg-outline-variant" />
             </div>
@@ -124,15 +114,15 @@ export default async function LoginPage({
             <EmailAuthCard defaultMode={defaultMode} />
 
             <p className="text-[11px] text-on-surface-variant/80 mt-6 text-center leading-relaxed">
-              Al continuar aceptas los{" "}
+              {t("form.termsPrefix")}{" "}
               <Link href="/terminos" className="font-semibold text-accent hover:underline underline-offset-2">
-                Términos de Servicio
+                {t("form.termsLink")}
               </Link>{" "}
-              y la{" "}
+              {t("form.and")}{" "}
               <Link href="/privacidad" className="font-semibold text-accent hover:underline underline-offset-2">
-                Política de Privacidad
+                {t("form.privacyLink")}
               </Link>{" "}
-              de VibeFitAI.
+              {t("form.termsSuffix")}
             </p>
           </div>
         </section>

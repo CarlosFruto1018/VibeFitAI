@@ -7,11 +7,15 @@ import { format } from "date-fns";
 import { TZDate } from "@date-fns/tz";
 import { getUserTimeZone, nowInTimeZone } from "@/lib/timezone";
 import { Flame, Dumbbell } from "lucide-react";
+import { getLocale } from "next-intl/server";
+import { isLocale, DEFAULT_LOCALE } from "@/i18n/config";
 import { SettingsClient } from "./SettingsClient";
 
 export default async function SettingsPage() {
   const session = await auth();
   const userId = session!.user!.id!;
+  const rawLocale = await getLocale();
+  const locale = isLocale(rawLocale) ? rawLocale : DEFAULT_LOCALE;
 
   // name/image se leen de la DB, no de la sesión: el JWT no se refresca al
   // editarlos desde este mismo panel.
@@ -103,6 +107,7 @@ export default async function SettingsPage() {
 
       {/* Ajustes */}
       <SettingsClient
+        locale={locale}
         profile={{
           name: user.name,
           image: user.image,

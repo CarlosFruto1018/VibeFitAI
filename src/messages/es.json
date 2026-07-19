@@ -1,0 +1,119 @@
+{
+  "common": {
+    "appName": "VibeFitAI"
+  },
+  "landing": {
+    "nav": {
+      "features": "Características",
+      "howItWorks": "Cómo funciona",
+      "privacy": "Privacidad",
+      "login": "Iniciar Sesión"
+    },
+    "hero": {
+      "badge": "Voz · Foto · Texto — tú eliges",
+      "titleLine1": "Registra tu gym",
+      "titleLine2": "en 5 segundos.",
+      "description": "Habla, saca una foto o escribe. VibeFitAI extrae tus series, pesos y reps con IA — y te muestra exactamente cómo progresas.",
+      "ctaPrimary": "Empezar gratis",
+      "ctaSecondary": "Ver cómo funciona",
+      "disclaimer": "Sin tarjeta de crédito · Tu cuenta lista en menos de un minuto."
+    },
+    "gallery": {
+      "title": "Hecho para el gym real",
+      "subtitle": "Sin excusas ni fricción — saca el teléfono, habla o toma una foto, y sigue entrenando."
+    },
+    "features": {
+      "title": "Tecnología diseñada para tu progreso",
+      "subtitle": "Sin formularios, sin fricción. VibeFitAI hace el trabajo pesado para que tú solo entrenes.",
+      "smartLog": {
+        "title": "Registro inteligente",
+        "desc": "Habla de forma natural, saca una foto a la pizarra del gym o escríbelo como lo dirías. VibeFitAI extrae series, repeticiones y cargas automáticamente."
+      },
+      "records": {
+        "title": "Récords al instante",
+        "desc": "Cada serie que registras se compara con tu historial. En cuanto superas una marca personal, VibeFitAI te avisa en el momento."
+      },
+      "chat": {
+        "title": "Chat con tu historial",
+        "desc": "«¿Cuánto hice en sentadilla el lunes?» — pregúntale a tus datos en lenguaje natural y obtén la respuesta al momento."
+      }
+    },
+    "howItWorks": {
+      "title": "El final del registro manual",
+      "subtitle": "Olvídate de las hojas de cálculo y las notas desordenadas. VibeFitAI procesa lenguaje natural.",
+      "speak": {
+        "title": "Habla como lo dirías",
+        "desc": "Sin plantillas ni menús desplegables. Escribe o di tu entrenamiento tal cual te sale, y la IA lo estructura por ti.",
+        "example": "«Registra 3 series de press militar con 40 kilos a 12 reps»",
+        "processed": "Procesado exitosamente"
+      },
+      "records": {
+        "title": "Detecta tus récords al momento",
+        "desc": "Cada serie se compara contra tu historial completo. En cuanto superas una marca, VibeFitAI te lo dice en la misma pantalla de registro."
+      },
+      "focus": "Sin plan de nutrición. Sin distracciones. Solo tu progreso de fuerza.",
+      "privacy": "Privacidad total. Tus datos son tuyos y de nadie más."
+    },
+    "cta": {
+      "title": "¿Listo para entrenar con superpoderes?",
+      "button": "Crear cuenta gratuita"
+    },
+    "footer": {
+      "tagline": "VibeFitAI · Registro de entrenamientos con IA",
+      "terms": "Términos",
+      "privacy": "Privacidad",
+      "copyright": "© 2026 VibeFitAI"
+    }
+  },
+  "auth": {
+    "panel": {
+      "titleLine1": "Tu potencial,",
+      "titleLine2": "optimizado por IA.",
+      "subtitle": "Únete a los deportistas que usan sus datos en tiempo real para superar sus límites todos los días.",
+      "copyright": "© 2026 VibeFitAI. Todos los derechos reservados.",
+      "features": {
+        "logging": { "title": "Registro por voz y foto", "desc": "Di «4 series de press banca con 80 kilos» o sube una foto — VibeFitAI lo guarda solo." },
+        "progress": { "title": "Progresión real", "desc": "Gráficas de carga semana a semana y detección de récords al instante." },
+        "chat": { "title": "Chat con tu data", "desc": "«¿Cuánto hice en sentadilla el lunes?» — respuesta inmediata de tu historial." }
+      }
+    },
+    "form": {
+      "title": "Comienza tu viaje",
+      "subtitle": "Crea una cuenta o entra para desbloquear el poder de la IA en tu entrenamiento.",
+      "continueWithGoogle": "Continuar con Google",
+      "orContinueWithEmail": "O continúa con email",
+      "termsPrefix": "Al continuar aceptas los",
+      "termsLink": "Términos de Servicio",
+      "and": "y la",
+      "privacyLink": "Política de Privacidad",
+      "termsSuffix": "de VibeFitAI.",
+      "tabs": { "login": "Entrar", "register": "Crear cuenta" },
+      "forgotHint": "Escribe tu correo y te enviaremos un código de 6 dígitos para confirmar que eres tú y elegir una contraseña nueva.",
+      "labels": { "name": "Nombre completo", "email": "Correo electrónico", "password": "Contraseña", "confirmPassword": "Confirmar contraseña" },
+      "placeholders": { "name": "Ej: Juan Pérez", "email": "nombre@ejemplo.com", "passwordLogin": "Tu contraseña", "passwordRegister": "Mínimo 8 caracteres", "confirmPassword": "Repite tu contraseña" },
+      "errors": { "passwordMismatch": "Las contraseñas no coinciden.", "loginFailed": "Correo o contraseña incorrectos.", "registerFailed": "No pudimos crear tu cuenta.", "codeFailed": "No pudimos enviar el código.", "connection": "Error de conexión. Intenta de nuevo." },
+      "submit": { "login": "Entrar →", "register": "Crear Cuenta →", "forgot": "Enviarme el código" },
+      "forgotPassword": "¿Olvidaste tu contraseña?",
+      "backToLogin": "Volver a iniciar sesión"
+    },
+    "reset": {
+      "title": "Confirma tu código",
+      "subtitle": "Escribe el código de 6 dígitos que te enviamos por correo, junto con la contraseña que quieres usar a partir de ahora.",
+      "backToLogin": "Volver al inicio de sesión",
+      "missingEmail": "Falta el correo en el enlace. Vuelve a",
+      "requestCode": "solicitar el código",
+      "fromLogin": "desde el inicio de sesión.",
+      "codeLabel": "Código de 6 dígitos",
+      "verifyCode": "Verificar código →",
+      "resendCode": "Reenviar código",
+      "resent": "Te enviamos un código nuevo.",
+      "newPasswordPlaceholder": "Nueva contraseña (mínimo 8 caracteres)",
+      "confirmPasswordPlaceholder": "Repite la contraseña",
+      "savePassword": "Guardar contraseña →",
+      "backToCode": "Volver a escribir el código",
+      "done": "Contraseña actualizada. Entrando a tu cuenta...",
+      "goToLogin": "Ir al inicio de sesión",
+      "errors": { "verify": "No pudimos verificar el código.", "passwordMismatch": "Las contraseñas no coinciden.", "reset": "No pudimos restablecer tu contraseña.", "connection": "Error de conexión. Intenta de nuevo." }
+    }
+  }
+}
