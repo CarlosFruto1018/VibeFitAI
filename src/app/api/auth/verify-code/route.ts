@@ -1,27 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db/client";
-import { users, verificationTokens } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
-import { hashPassword } from "@/lib/password";
 import { isResetCodeValid } from "@/lib/reset-code";
 import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { logger } from "@/lib/logger";
 import { z } from "zod";
 
-const ResetSchema = z.object({
+const VerifySchema = z.object({
   email: z.string().email().max(254),
   code: z.string().regex(/^\d{6}$/, "El código debe tener 6 dígitos"),
-  password: z.string().min(8, "La contraseña debe tener al menos 8 caracteres").max(100),
 });
 
+// Solo confirma que el código sea válido — no lo consume ni cambia nada.
+// El paso final (/api/auth/reset) vuelve a validar y ahí sí lo gasta,
+// así que esta comprobación previa es solo para la UX de dos pasos.
 export async function POST(req: NextRequest) {
   try {
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "anon";
-    const rl = await checkRateLimit(`ip:${ip}`, "reset", 5, 300);
+    const rl = await checkRateLimit(`ip:${ip}`, "verify-code", 5, 300);
     if (!rl.allowed) return rateLimitResponse(rl.retryAfterSec);
 
     const body = await req.json();
-    const parsed = ResetSchema.safeParse(body);
+    const parsed = VerifySchema.safeParse(body);
     if (!parsed.success) {
       const msg = parsed.error.issues[0]?.message ?? "Datos no válidos";
       return NextResponse.json({ error: msg }, { status: 400 });
@@ -37,19 +35,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const passwordHash = await hashPassword(parsed.data.password);
-    await db
-      .update(users)
-      // El enlace llegó a su correo: cuenta verificada.
-      .set({ passwordHash, emailVerified: new Date() })
-      .where(eq(users.email, email));
-
-    // Token de un solo uso.
-    await db.delete(verificationTokens).where(eq(verificationTokens.identifier, email));
-
     return NextResponse.json({ ok: true });
   } catch (err) {
-    logger.error("POST /api/auth/reset", "Error al restablecer la contraseña", err);
-    return NextResponse.json({ error: "No pudimos restablecer tu contraseña. Intenta de nuevo." }, { status: 500 });
+    logger.error("POST /api/auth/verify-code", "Error al verificar el código", err);
+    return NextResponse.json({ error: "No pudimos verificar el código. Intenta de nuevo." }, { status: 500 });
   }
 }
