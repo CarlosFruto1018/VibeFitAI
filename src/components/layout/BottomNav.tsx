@@ -2,20 +2,22 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Home, PlusCircle, MessageCircle, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Cuatro destinos, como el diseño de Stitch: Inicio, Registrar, Chat, Perfil.
-// Progreso e Historial se alcanzan desde el dashboard («Ver análisis» / «Ver todo»).
-const ITEMS = [
-  { href: "/dashboard", label: "Inicio", icon: Home },
-  { href: "/record", label: "Registrar", icon: PlusCircle },
-  { href: "/chat", label: "Chat", icon: MessageCircle },
-  { href: "/settings", label: "Perfil", icon: User },
-];
-
 export function BottomNav() {
   const pathname = usePathname();
+  const t = useTranslations("nav");
+
+  // Cuatro destinos, como el diseño de Stitch: Inicio, Registrar, Chat, Perfil.
+  // Progreso e Historial se alcanzan desde el dashboard («Ver análisis» / «Ver todo»).
+  const ITEMS = [
+    { href: "/dashboard", label: t("home"), icon: Home },
+    { href: "/record", label: t("record"), icon: PlusCircle },
+    { href: "/chat", label: t("chat"), icon: MessageCircle },
+    { href: "/settings", label: t("profile"), icon: User },
+  ];
 
   return (
     <nav className="md:hidden fixed bottom-0 inset-x-0 z-50">

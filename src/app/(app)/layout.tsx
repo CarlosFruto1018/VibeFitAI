@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Bell } from "lucide-react";
+import { getTranslations } from "next-intl/server";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { Sidebar } from "@/components/layout/Sidebar";
@@ -10,6 +11,7 @@ import { TimezoneSync } from "@/components/TimezoneSync";
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
   if (!session?.user) redirect("/login");
+  const t = await getTranslations("nav");
 
   return (
     <div className="min-h-dvh bg-background flex">
@@ -23,12 +25,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <Image src="/icons/icon-192.png" alt="" width={34} height={34} className="rounded-xl shrink-0" />
             <div>
               <p className="text-base font-black tracking-tight text-on-surface leading-none">VibeFitAI</p>
-              <p className="text-[10px] text-on-surface-variant leading-none mt-1">Tu entrenador IA</p>
+              <p className="text-[10px] text-on-surface-variant leading-none mt-1">{t("tagline")}</p>
             </div>
           </Link>
           <Link
             href="/settings"
-            aria-label="Perfil y ajustes"
+            aria-label={t("profileAndSettings")}
             className="w-9 h-9 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container transition-colors active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             <Bell size={19} />

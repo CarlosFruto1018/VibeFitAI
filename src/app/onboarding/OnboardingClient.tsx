@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 import { Camera, ChevronLeft, Loader2, Sparkles } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn, toKg, type WeightUnit } from "@/lib/utils";
 
 const TOTAL_STEPS = 5;
@@ -13,6 +14,7 @@ const BIG_FIELD =
   "w-full rounded-2xl border border-outline-variant bg-white px-5 py-4 text-lg text-on-surface placeholder:text-on-surface-variant/50 text-center focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent disabled:opacity-50 shadow-sm";
 
 export function OnboardingClient({ defaultName }: { defaultName: string }) {
+  const t = useTranslations("onboarding");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [step, setStep] = useState(0);
@@ -38,7 +40,7 @@ export function OnboardingClient({ defaultName }: { defaultName: string }) {
     if (!file) return;
     setPhotoError(null);
     if (file.size > 5 * 1024 * 1024) {
-      setPhotoError("La imagen no puede superar 5 MB.");
+      setPhotoError(t("photoTooLarge"));
       return;
     }
     setUploadingPhoto(true);
@@ -46,18 +48,18 @@ export function OnboardingClient({ defaultName }: { defaultName: string }) {
       const presignRes = await fetch(`/api/input/presign?type=image&mimeType=${encodeURIComponent(file.type)}`);
       const presign = await presignRes.json().catch(() => ({}));
       if (!presignRes.ok) {
-        setPhotoError(typeof presign.error === "string" ? presign.error : "No pudimos preparar la subida.");
+        setPhotoError(typeof presign.error === "string" ? presign.error : t("uploadPrepareFailed"));
         return;
       }
       const putRes = await fetch(presign.uploadUrl, { method: "PUT", body: file, headers: { "Content-Type": file.type } });
       if (!putRes.ok) {
-        setPhotoError("Error al subir la imagen. Intenta de nuevo.");
+        setPhotoError(t("uploadFailed"));
         return;
       }
       setPhotoKey(presign.storageKey);
       setPhotoPreview(URL.createObjectURL(file));
     } catch {
-      setPhotoError("Error de conexión al subir la foto.");
+      setPhotoError(t("uploadConnectionError"));
     } finally {
       setUploadingPhoto(false);
     }
@@ -85,12 +87,12 @@ export function OnboardingClient({ defaultName }: { defaultName: string }) {
       });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
-        setSaveError(typeof data.error === "string" ? data.error : "No pudimos guardar tu perfil. Intenta de nuevo.");
+        setSaveError(typeof data.error === "string" ? data.error : t("saveFailed"));
         return;
       }
       window.location.href = "/dashboard";
     } catch {
-      setSaveError("Error de conexión. Intenta de nuevo.");
+      setSaveError(t("connectionError"));
     } finally {
       setSaving(false);
     }
@@ -106,7 +108,7 @@ export function OnboardingClient({ defaultName }: { defaultName: string }) {
           {step > 0 ? (
             <button
               onClick={back}
-              aria-label="Paso anterior"
+              aria-label={t("previousStep")}
               className="w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors active:scale-95"
             >
               <ChevronLeft size={18} />
@@ -133,16 +135,16 @@ export function OnboardingClient({ defaultName }: { defaultName: string }) {
             <>
               <span className="inline-flex items-center gap-1.5 text-[11px] font-mono font-semibold text-on-primary-container bg-primary-container px-3 py-1.5 rounded-full">
                 <Sparkles size={12} />
-                Bienvenido a VibeFitAI
+                {t("welcomeBadge")}
               </span>
               <h1 className="text-3xl font-black tracking-tight [text-wrap:balance]">
-                ¿Cómo quieres que te llamemos?
+                {t("nameQuestion")}
               </h1>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="Tu nombre"
+                placeholder={t("namePlaceholder")}
                 maxLength={100}
                 autoFocus
                 className={BIG_FIELD}
@@ -153,10 +155,10 @@ export function OnboardingClient({ defaultName }: { defaultName: string }) {
           {step === 1 && (
             <>
               <h1 className="text-3xl font-black tracking-tight [text-wrap:balance]">
-                ¿Cuándo naciste{name.trim() ? `, ${name.trim()}` : ""}?
+                {t("birthQuestion", { name: name.trim() ? `, ${name.trim()}` : "" })}
               </h1>
               <p className="text-sm text-on-surface-variant [text-wrap:pretty]">
-                Nos ayuda a personalizar tus métricas. Puedes saltarlo si prefieres.
+                {t("birthHint")}
               </p>
               <input
                 type="date"
@@ -170,9 +172,9 @@ export function OnboardingClient({ defaultName }: { defaultName: string }) {
 
           {step === 2 && (
             <>
-              <h1 className="text-3xl font-black tracking-tight [text-wrap:balance]">Tus medidas</h1>
+              <h1 className="text-3xl font-black tracking-tight [text-wrap:balance]">{t("measurementsTitle")}</h1>
               <p className="text-sm text-on-surface-variant [text-wrap:pretty]">
-                Para calcular tu volumen y progresión con más precisión.
+                {t("measurementsHint")}
               </p>
               <div className="flex gap-1.5 w-full">
                 {(["kg", "lb"] as const).map((u) => (
@@ -199,7 +201,7 @@ export function OnboardingClient({ defaultName }: { defaultName: string }) {
                     placeholder={unit === "kg" ? "75" : "165"}
                     className={BIG_FIELD}
                   />
-                  <span className="text-xs text-on-surface-variant">Peso ({unit})</span>
+                  <span className="text-xs text-on-surface-variant">{t("weightLabel", { unit })}</span>
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <input
@@ -211,7 +213,7 @@ export function OnboardingClient({ defaultName }: { defaultName: string }) {
                     max={250}
                     className={BIG_FIELD}
                   />
-                  <span className="text-xs text-on-surface-variant">Estatura (cm)</span>
+                  <span className="text-xs text-on-surface-variant">{t("heightLabel")}</span>
                 </div>
               </div>
             </>
@@ -220,10 +222,10 @@ export function OnboardingClient({ defaultName }: { defaultName: string }) {
           {step === 3 && (
             <>
               <h1 className="text-3xl font-black tracking-tight [text-wrap:balance]">
-                ¿Cuántos días quieres entrenar por semana?
+                {t("goalQuestion")}
               </h1>
               <p className="text-sm text-on-surface-variant [text-wrap:pretty]">
-                Tu meta semanal. El dashboard te mostrará cómo vas contra ella.
+                {t("goalHint")}
               </p>
               <div className="grid grid-cols-3 gap-3 w-full">
                 {GOAL_OPTIONS.map((g) => (
@@ -246,19 +248,19 @@ export function OnboardingClient({ defaultName }: { defaultName: string }) {
 
           {step === 4 && (
             <>
-              <h1 className="text-3xl font-black tracking-tight [text-wrap:balance]">Ponle cara a tu perfil</h1>
+              <h1 className="text-3xl font-black tracking-tight [text-wrap:balance]">{t("photoTitle")}</h1>
               <p className="text-sm text-on-surface-variant [text-wrap:pretty]">
-                Opcional — siempre puedes añadirla después desde tu perfil.
+                {t("photoHint")}
               </p>
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={uploadingPhoto}
-                aria-label="Elegir foto de perfil"
+                aria-label={t("choosePhoto")}
                 className="relative w-32 h-32 rounded-full border-2 border-dashed border-outline-variant hover:border-accent/60 transition-colors flex items-center justify-center overflow-hidden bg-surface-container-low active:scale-95 disabled:opacity-60"
               >
                 {photoPreview ? (
-                  <Image src={photoPreview} alt="Vista previa" fill className="object-cover" unoptimized />
+                  <Image src={photoPreview} alt={t("photoPreviewAlt")} fill className="object-cover" unoptimized />
                 ) : uploadingPhoto ? (
                   <Loader2 size={28} className="animate-spin text-on-surface-variant" />
                 ) : (
@@ -271,7 +273,7 @@ export function OnboardingClient({ defaultName }: { defaultName: string }) {
                 accept="image/jpeg,image/png,image/webp"
                 onChange={handlePhotoChange}
                 className="hidden"
-                aria-label="Archivo de foto de perfil"
+                aria-label={t("photoFileInput")}
               />
               {photoError && (
                 <p className="text-xs text-error bg-error-container/60 rounded-xl px-3 py-2 animate-fade-in">{photoError}</p>
@@ -295,9 +297,9 @@ export function OnboardingClient({ defaultName }: { defaultName: string }) {
           {saving ? (
             <Loader2 size={16} className="animate-spin inline" />
           ) : isLast ? (
-            "¡Empezar a entrenar! 🚀"
+            t("start")
           ) : (
-            "Continuar"
+            t("continue")
           )}
         </button>
         {!isLast && step > 0 && (
@@ -305,7 +307,7 @@ export function OnboardingClient({ defaultName }: { defaultName: string }) {
             onClick={next}
             className="text-xs text-on-surface-variant hover:text-on-surface underline underline-offset-2 transition-colors self-center"
           >
-            Saltar este paso
+            {t("skipStep")}
           </button>
         )}
       </div>

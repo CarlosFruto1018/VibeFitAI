@@ -5,18 +5,20 @@ import { sessions, personalRecords, userProfiles, users } from "@/lib/db/schema"
 import { eq, desc } from "drizzle-orm";
 import { subDays, format } from "date-fns";
 import { TZDate } from "@date-fns/tz";
-import { es } from "date-fns/locale";
+import { es, enUS } from "date-fns/locale";
+import { getTranslations, getLocale } from "next-intl/server";
 import { getUserTimeZone, nowInTimeZone } from "@/lib/timezone";
 import { getWeightUnit } from "@/lib/get-weight-unit";
 import { Sparkles, Dumbbell, CalendarDays, ChevronRight, Trophy } from "lucide-react";
 import Link from "next/link";
 import { cn, convertWeight, formatWeight } from "@/lib/utils";
 
-const DAY_LABELS = ["L", "M", "X", "J", "V", "S", "D"];
-
 export default async function DashboardPage() {
   const session = await auth();
   const userId = session!.user!.id!;
+  const [t, locale] = await Promise.all([getTranslations("dashboard"), getLocale()]);
+  const dateLocale = locale === "en" ? enUS : es;
+  const DAY_LABELS = t.raw("dayLabels") as string[];
 
   // Todas las fechas en la zona horaria del usuario: el servidor corre en UTC
   // y sin esto "hoy" (y la semana entera) se corre un día por la noche.
@@ -89,18 +91,18 @@ export default async function DashboardPage() {
       {/* Saludo */}
       <section className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-black tracking-tight text-on-surface">¡Hola, {firstName}!</h1>
+          <h1 className="text-3xl font-black tracking-tight text-on-surface">{t("greeting", { name: firstName })}</h1>
           <p className="text-sm text-on-surface-variant mt-1">
             {weekSessions.length >= weeklyGoal
-              ? "Tu progreso esta semana es excepcional."
+              ? t("moodExcellent")
               : weekSessions.length > 0
-                ? "Buen ritmo. Sigue así esta semana."
-                : "Semana nueva, primera sesión pendiente."}
+                ? t("moodGood")
+                : t("moodNew")}
           </p>
         </div>
         <Link
           href="/settings"
-          aria-label="Ir a tu perfil"
+          aria-label={t("goToProfile")}
           className="hidden md:flex w-10 h-10 rounded-full bg-primary items-center justify-center text-on-primary text-sm font-bold ring-2 ring-white shadow-sm overflow-hidden"
         >
           {dbUser?.image ? (
@@ -116,9 +118,9 @@ export default async function DashboardPage() {
       <section className="bg-white border border-outline-variant/50 rounded-2xl p-5 shadow-card">
         <div className="flex justify-between items-end mb-5">
           <div>
-            <h3 className="text-xs font-medium text-on-surface-variant">Actividad Semanal</h3>
+            <h3 className="text-xs font-medium text-on-surface-variant">{t("weeklyActivity")}</h3>
             <p className="text-2xl font-black text-on-surface font-mono mt-0.5">
-              {Math.round(convertWeight(weekVolumeKg, unit)).toLocaleString("es")}{" "}
+              {Math.round(convertWeight(weekVolumeKg, unit)).toLocaleString(locale)}{" "}
               <span className="text-base font-bold">{unit}</span>
             </p>
           </div>
@@ -130,7 +132,7 @@ export default async function DashboardPage() {
               )}
             >
               {weekPct >= 0 ? "+" : ""}
-              {weekPct}% vs semana pasada
+              {weekPct}% {t("vsLastWeek")}
             </span>
           )}
         </div>
@@ -157,8 +159,8 @@ export default async function DashboardPage() {
           })}
         </div>
         <div className="flex justify-between mt-2 text-[11px] font-medium text-on-surface-variant px-0.5">
-          {DAY_LABELS.map((d) => (
-            <span key={d} className="w-full text-center">{d}</span>
+          {DAY_LABELS.map((d, i) => (
+            <span key={i} className="w-full text-center">{d}</span>
           ))}
         </div>
       </section>
@@ -169,7 +171,7 @@ export default async function DashboardPage() {
           <Trophy size={18} className="text-accent" />
           <div>
             <p className="text-[11px] font-medium text-on-surface-variant">
-              {topPr ? `Récord · ${topPr.exercise?.displayName ?? "Ejercicio"}` : "Récords"}
+              {topPr ? `${t("record")} · ${topPr.exercise?.displayName ?? t("exercise")}` : t("records")}
             </p>
             <p className="text-xl font-black text-on-surface font-mono">
               {topPr
@@ -183,9 +185,9 @@ export default async function DashboardPage() {
         <div className="bg-white border border-outline-variant/50 rounded-2xl p-4 h-32 flex flex-col justify-between shadow-card">
           <CalendarDays size={18} className="text-accent" />
           <div>
-            <p className="text-[11px] font-medium text-on-surface-variant">Total Mes</p>
+            <p className="text-[11px] font-medium text-on-surface-variant">{t("totalMonth")}</p>
             <p className="text-xl font-black text-on-surface font-mono">
-              {monthSessions.length} <span className="text-sm font-bold">ses.</span>
+              {monthSessions.length} <span className="text-sm font-bold">{t("sessionsAbbr")}</span>
             </p>
           </div>
         </div>
@@ -199,24 +201,22 @@ export default async function DashboardPage() {
           <div className="flex items-center gap-2">
             <Sparkles size={15} className="text-inverse-primary" />
             <span className="text-xs font-semibold uppercase tracking-widest text-inverse-primary">
-              VibeFitAI Insight
+              {t("insight")}
             </span>
           </div>
           <h3 className="text-lg font-bold leading-tight">
             {weekSessions.length >= weeklyGoal
-              ? "Meta semanal cumplida 🎉"
-              : `Llevas ${weekSessions.length} de ${weeklyGoal} sesiones esta semana`}
+              ? t("goalReached")
+              : t("sessionsThisWeek", { done: weekSessions.length, goal: weeklyGoal })}
           </h3>
           <p className="text-sm text-white/70">
-            {remaining > 0
-              ? `Te falta${remaining > 1 ? "n" : ""} ${remaining} sesión${remaining > 1 ? "es" : ""} para tu meta. Registra la próxima y mantén la racha.`
-              : "Buen momento para revisar tu progresión de cargas y planear la próxima semana."}
+            {remaining > 0 ? t("sessionsRemaining", { count: remaining }) : t("goodTimeToReview")}
           </p>
           <Link
             href="/progress"
             className="mt-2 self-start px-4 py-2 bg-white text-primary rounded-full text-xs font-semibold active:scale-95 transition-transform hover:bg-white/90"
           >
-            Ver análisis
+            {t("viewAnalysis")}
           </Link>
         </div>
       </section>
@@ -225,9 +225,9 @@ export default async function DashboardPage() {
       {recentSessions.length > 0 && (
         <section className="flex flex-col gap-3">
           <div className="flex justify-between items-center">
-            <h3 className="text-base font-bold text-on-surface">Sesiones Recientes</h3>
+            <h3 className="text-base font-bold text-on-surface">{t("recentSessions")}</h3>
             <Link href="/history" className="text-xs font-medium text-accent flex items-center gap-0.5">
-              Ver todo <ChevronRight size={13} />
+              {t("viewAll")} <ChevronRight size={13} />
             </Link>
           </div>
           <div className="flex flex-col gap-2">
@@ -242,12 +242,12 @@ export default async function DashboardPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-on-surface capitalize">
-                    {format(new TZDate(s.startedAt, tz), "EEEE d MMM", { locale: es })}
+                    {format(new TZDate(s.startedAt, tz), "EEEE d MMM", { locale: dateLocale })}
                   </p>
                   <p className="text-xs text-on-surface-variant">
                     {s.totalVolumeKg
-                      ? `${formatWeight(s.totalVolumeKg, unit)} levantados`
-                      : "Sin volumen registrado"}
+                      ? t("weightLifted", { weight: formatWeight(s.totalVolumeKg, unit) })
+                      : t("noVolumeRecorded")}
                   </p>
                 </div>
                 <ChevronRight size={16} className="text-outline" />
@@ -265,7 +265,7 @@ export default async function DashboardPage() {
               <Sparkles size={18} className="text-inverse-primary" />
             </div>
             <p className="text-sm text-on-surface italic max-w-xs [text-wrap:pretty]">
-              «{firstName}, descansar bien hoy optimiza tu rendimiento en la próxima sesión. ¡Recupera!»
+              {t("coachNote", { name: firstName })}
             </p>
           </div>
         </section>
@@ -277,27 +277,27 @@ export default async function DashboardPage() {
           <div className="w-14 h-14 rounded-2xl bg-primary-container flex items-center justify-center mx-auto mb-4">
             <Dumbbell size={24} className="text-on-primary-container" />
           </div>
-          <p className="text-sm font-semibold text-on-surface mb-1">¡Bienvenido, {firstName}!</p>
+          <p className="text-sm font-semibold text-on-surface mb-1">{t("welcome", { name: firstName })}</p>
           <p className="text-xs text-on-surface-variant mb-5">
-            Registra tu primer entrenamiento como prefieras:
+            {t("firstWorkoutPrompt")}
           </p>
           <div className="flex flex-col gap-2 text-left max-w-xs mx-auto mb-6">
             <div className="flex items-start gap-2.5">
               <span className="text-base leading-5">🎙️</span>
               <p className="text-xs text-on-surface-variant">
-                <span className="font-semibold text-on-surface">Voz</span> — di lo que hiciste: «4 series de press banca con 60 kilos»
+                <span className="font-semibold text-on-surface">{t("methodVoice.label")}</span> — {t("methodVoice.desc")}
               </p>
             </div>
             <div className="flex items-start gap-2.5">
               <span className="text-base leading-5">📸</span>
               <p className="text-xs text-on-surface-variant">
-                <span className="font-semibold text-on-surface">Foto</span> — a la pantalla de la máquina o tu hoja de rutina
+                <span className="font-semibold text-on-surface">{t("methodPhoto.label")}</span> — {t("methodPhoto.desc")}
               </p>
             </div>
             <div className="flex items-start gap-2.5">
               <span className="text-base leading-5">⌨️</span>
               <p className="text-xs text-on-surface-variant">
-                <span className="font-semibold text-on-surface">Texto</span> — escríbelo como lo dirías, la IA lo entiende
+                <span className="font-semibold text-on-surface">{t("methodText.label")}</span> — {t("methodText.desc")}
               </p>
             </div>
           </div>
@@ -305,7 +305,7 @@ export default async function DashboardPage() {
             href="/record"
             className="inline-flex items-center gap-1.5 bg-primary text-on-primary text-sm font-semibold px-5 py-2.5 rounded-full hover:bg-primary/90 transition-colors"
           >
-            + Registrar mi primer entrenamiento
+            {t("logFirstWorkout")}
           </Link>
         </div>
       )}
