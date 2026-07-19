@@ -305,6 +305,33 @@
     "repsShort": "{count} reps",
     "more": "+{count} más"
   },
+  "progress": {
+    "title": "Progreso",
+    "lastMonths": "Últimos 3 meses",
+    "personalRecords": "Récords personales",
+    "loadProgression": "Progresión de carga",
+    "notEnoughData": "Sin datos suficientes",
+    "maxLoad": "Carga máx.",
+    "emptyTitle": "Sin datos aún",
+    "emptyDesc": "Registra el mismo ejercicio en al menos 2 sesiones para ver tu progresión.",
+    "emptyAction": "+ Registrar entrenamiento",
+    "exercise": "Ejercicio"
+  },
+  "chat": {
+    "welcome": "Hola 👋 Puedes preguntarme sobre tu historial de entrenamientos. Por ejemplo: «¿cuánto levanté la última vez en sentadilla?» o «¿cuántas sesiones hice esta semana?»",
+    "errorFallback": "Lo siento, no pude procesar tu consulta en este momento.",
+    "newChat": "Nuevo Chat",
+    "suggestions": "Sugerencias",
+    "suggestion1": "¿Cuánto levanté en sentadilla la última vez?",
+    "suggestion2": "¿Cuántas sesiones hice esta semana?",
+    "suggestion3": "¿Cuál es mi récord en press banca?",
+    "suggestion4": "Muéstrame mi progresión en los últimos 30 días",
+    "coachTitle": "Coach IA",
+    "coachSubtitle": "Pregunta sobre tu historial en tiempo real",
+    "questionLabel": "Pregunta sobre tu historial de entrenamientos",
+    "inputPlaceholder": "Escribe un mensaje...",
+    "sendQuestion": "Enviar pregunta"
+  },
   "nav": {
     "home": "Inicio",
     "progress": "Progreso",

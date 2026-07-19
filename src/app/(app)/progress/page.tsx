@@ -8,12 +8,13 @@ import { Card } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { getWeightUnit } from "@/lib/get-weight-unit";
 import { formatWeight } from "@/lib/utils";
+import { getTranslations } from "next-intl/server";
 import { TrendingUp, Trophy, Dumbbell } from "lucide-react";
 
 export default async function ProgressPage() {
   const session = await auth();
   const userId = session!.user!.id!;
-  const unit = await getWeightUnit(userId);
+  const [unit, t] = await Promise.all([getWeightUnit(userId), getTranslations("progress")]);
 
   const threeMonthsAgo = subMonths(new Date(), 3);
 
@@ -45,7 +46,7 @@ export default async function ProgressPage() {
 
     for (const s of sets) {
       if (!s.weightKg) continue;
-      const name = s.exercise?.displayName ?? s.exerciseName ?? "Ejercicio";
+      const name = s.exercise?.displayName ?? s.exerciseName ?? t("exercise");
       const key = s.exerciseId ?? `name:${name.toLowerCase().trim()}`;
       const date = sessionDateMap[s.sessionId]?.toISOString().split("T")[0];
       if (!date) continue;
@@ -76,8 +77,8 @@ export default async function ProgressPage() {
           <TrendingUp size={16} className="text-inverse-primary" />
         </div>
         <div>
-          <h1 className="text-xl font-black text-slate-900">Progreso</h1>
-          <p className="text-xs text-slate-400">Últimos 3 meses</p>
+          <h1 className="text-xl font-black text-slate-900">{t("title")}</h1>
+          <p className="text-xs text-slate-400">{t("lastMonths")}</p>
         </div>
       </div>
 
@@ -86,7 +87,7 @@ export default async function ProgressPage() {
         <Card className="overflow-hidden">
           <div className="flex items-center gap-2 px-4 pt-4 pb-2">
             <Trophy size={14} className="text-yellow-500" />
-            <h2 className="text-sm font-semibold text-slate-900">Récords personales</h2>
+            <h2 className="text-sm font-semibold text-slate-900">{t("personalRecords")}</h2>
           </div>
           <div className="divide-y divide-slate-50">
             {prs.map((pr) => (
@@ -104,7 +105,7 @@ export default async function ProgressPage() {
       {/* Charts */}
       <section className="flex flex-col gap-3">
         <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-1">
-          Progresión de carga
+          {t("loadProgression")}
         </h2>
 
         {charts.length > 0 ? (
@@ -118,10 +119,10 @@ export default async function ProgressPage() {
         ) : (
           <EmptyState
             icon={<Dumbbell size={24} className="text-slate-400" />}
-            title="Sin datos aún"
-            description="Registra el mismo ejercicio en al menos 2 sesiones para ver tu progresión."
+            title={t("emptyTitle")}
+            description={t("emptyDesc")}
             actionHref="/record"
-            actionLabel="+ Registrar entrenamiento"
+            actionLabel={t("emptyAction")}
           />
         )}
       </section>

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Send, Bot, Sparkles, PlusCircle, MessageCircle } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
 interface Message {
@@ -9,20 +10,10 @@ interface Message {
   content: string;
 }
 
-const WELCOME: Message = {
-  role: "assistant",
-  content:
-    "Hola 👋 Puedes preguntarme sobre tu historial de entrenamientos. Por ejemplo: «¿cuánto levanté la última vez en sentadilla?» o «¿cuántas sesiones hice esta semana?»",
-};
-
-const SUGGESTIONS = [
-  "¿Cuánto levanté en sentadilla la última vez?",
-  "¿Cuántas sesiones hice esta semana?",
-  "¿Cuál es mi récord en press banca?",
-  "Muéstrame mi progresión en los últimos 30 días",
-];
-
 export default function ChatPage() {
+  const t = useTranslations("chat");
+  const WELCOME: Message = { role: "assistant", content: t("welcome") };
+  const SUGGESTIONS = [t("suggestion1"), t("suggestion2"), t("suggestion3"), t("suggestion4")];
   const [messages, setMessages] = useState<Message[]>([WELCOME]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -50,7 +41,7 @@ export default function ChatPage() {
     } catch {
       setMessages((m) => [
         ...m,
-        { role: "assistant", content: "Lo siento, no pude procesar tu consulta en este momento." },
+        { role: "assistant", content: t("errorFallback") },
       ]);
     } finally {
       setLoading(false);
@@ -86,11 +77,11 @@ export default function ChatPage() {
           className="flex items-center justify-center gap-2 w-full bg-accent hover:bg-accent/90 text-white rounded-xl py-3 px-4 text-sm font-semibold transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
         >
           <PlusCircle size={16} />
-          Nuevo Chat
+          {t("newChat")}
         </button>
         <div className="flex flex-col gap-1">
           <p className="text-[10px] font-mono font-semibold text-on-surface-variant/70 uppercase tracking-widest px-2 mb-2">
-            Sugerencias
+            {t("suggestions")}
           </p>
           {SUGGESTIONS.map((s) => (
             <button
@@ -115,8 +106,8 @@ export default function ChatPage() {
             <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center mb-3">
               <Bot size={26} className="text-inverse-primary" />
             </div>
-            <h1 className="text-lg font-bold text-on-surface">Coach IA</h1>
-            <p className="text-xs text-on-surface-variant">Pregunta sobre tu historial en tiempo real</p>
+            <h1 className="text-lg font-bold text-on-surface">{t("coachTitle")}</h1>
+            <p className="text-xs text-on-surface-variant">{t("coachSubtitle")}</p>
           </section>
 
           {messages.map((m, i) => (
@@ -159,7 +150,7 @@ export default function ChatPage() {
             <div className="flex flex-col gap-2 mt-1 lg:hidden">
               <p className="text-xs text-on-surface-variant/80 font-medium px-1 flex items-center gap-1.5">
                 <Sparkles size={12} className="text-accent" />
-                Sugerencias
+                {t("suggestions")}
               </p>
               <div className="flex flex-col gap-1.5">
                 {SUGGESTIONS.map((s) => (
@@ -181,7 +172,7 @@ export default function ChatPage() {
         {/* Input — pastilla con botón circular */}
         <form onSubmit={handleSubmit} className="flex items-end gap-2 pt-3 shrink-0 border-t border-outline-variant/60">
           <label htmlFor="chat-question" className="sr-only">
-            Pregunta sobre tu historial de entrenamientos
+            {t("questionLabel")}
           </label>
           <textarea
             id="chat-question"
@@ -189,7 +180,7 @@ export default function ChatPage() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Escribe un mensaje..."
+            placeholder={t("inputPlaceholder")}
             rows={1}
             disabled={loading}
             className="flex-1 bg-white border border-outline-variant rounded-full px-5 py-3 text-sm text-on-surface placeholder:text-on-surface-variant/60 resize-none focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent disabled:opacity-50 shadow-sm leading-relaxed max-h-32"
@@ -197,7 +188,7 @@ export default function ChatPage() {
           <button
             type="submit"
             disabled={loading || !input.trim()}
-            aria-label="Enviar pregunta"
+            aria-label={t("sendQuestion")}
             className="w-11 h-11 rounded-full bg-primary hover:bg-primary/85 flex items-center justify-center disabled:opacity-30 transition-all duration-200 active:scale-95 shadow-sm shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
           >
             <Send size={15} className="text-white" />

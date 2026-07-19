@@ -305,6 +305,33 @@
     "repsShort": "{count} reps",
     "more": "+{count} more"
   },
+  "progress": {
+    "title": "Progress",
+    "lastMonths": "Last 3 months",
+    "personalRecords": "Personal records",
+    "loadProgression": "Load progression",
+    "notEnoughData": "Not enough data",
+    "maxLoad": "Max. load",
+    "emptyTitle": "No data yet",
+    "emptyDesc": "Log the same exercise in at least 2 sessions to see your progression.",
+    "emptyAction": "+ Log workout",
+    "exercise": "Exercise"
+  },
+  "chat": {
+    "welcome": "Hi 👋 You can ask me about your workout history. For example: \"how much did I squat last time?\" or \"how many sessions did I do this week?\"",
+    "errorFallback": "Sorry, I couldn't process your question right now.",
+    "newChat": "New Chat",
+    "suggestions": "Suggestions",
+    "suggestion1": "How much did I squat last time?",
+    "suggestion2": "How many sessions did I do this week?",
+    "suggestion3": "What's my bench press record?",
+    "suggestion4": "Show me my progression over the last 30 days",
+    "coachTitle": "AI Coach",
+    "coachSubtitle": "Ask about your history in real time",
+    "questionLabel": "Ask about your workout history",
+    "inputPlaceholder": "Type a message...",
+    "sendQuestion": "Send question"
+  },
   "nav": {
     "home": "Home",
     "progress": "Progress",

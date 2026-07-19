@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Sliders, Scale, Ruler, Target, CalendarDays, Camera, LogOut, Trash2, CheckCircle, XCircle, Loader2, User, Languages } from "lucide-react";
 import { cn, displayWeight, toKg, type WeightUnit } from "@/lib/utils";
@@ -37,13 +37,19 @@ export function SettingsClient({ locale, profile, signOutAction }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [changingLocale, setChangingLocale] = useState<Locale | null>(null);
 
+  // Cookie legible por next-intl en el servidor (mismo patrón que TimezoneSync
+  // con `tz`); recarga completa para que los server components la tomen. La
+  // mutación de document.cookie vive en un efecto (no en el handler directo)
+  // para no tocar un valor externo durante el render.
+  useEffect(() => {
+    if (!changingLocale) return;
+    document.cookie = `${LOCALE_COOKIE}=${changingLocale}; path=/; max-age=31536000; samesite=lax`;
+    window.location.reload();
+  }, [changingLocale]);
+
   function handleLocaleChange(next: Locale) {
     if (next === locale) return;
     setChangingLocale(next);
-    // Cookie legible por next-intl en el servidor (mismo patrón que TimezoneSync
-    // con `tz`); recarga completa para que los server components la tomen.
-    document.cookie = `${LOCALE_COOKIE}=${next}; path=/; max-age=31536000; samesite=lax`;
-    window.location.reload();
   }
 
   const [name, setName] = useState(profile.name);

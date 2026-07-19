@@ -2,7 +2,8 @@
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { es, enUS } from "date-fns/locale";
+import { useLocale, useTranslations } from "next-intl";
 import { displayWeight, type WeightUnit } from "@/lib/utils";
 
 interface DataPoint {
@@ -18,17 +19,21 @@ interface LoadChartProps {
 }
 
 export function LoadChart({ data, exerciseName, unit = "kg" }: LoadChartProps) {
+  const t = useTranslations("progress");
+  const locale = useLocale();
+  const dateLocale = locale === "en" ? enUS : es;
+
   if (data.length === 0) {
     return (
       <div className="flex items-center justify-center h-40 text-slate-400 text-sm">
-        Sin datos suficientes
+        {t("notEnoughData")}
       </div>
     );
   }
 
   const formatted = data.map((d) => ({
     ...d,
-    label: format(new Date(d.date), "d MMM", { locale: es }),
+    label: format(new Date(d.date), "d MMM", { locale: dateLocale }),
     weightKg: displayWeight(d.weightKg, unit),
   }));
 
@@ -52,7 +57,7 @@ export function LoadChart({ data, exerciseName, unit = "kg" }: LoadChartProps) {
           <Tooltip
             contentStyle={{ background: "#0f172a", border: "none", borderRadius: 10, color: "#f8fafc", fontSize: 12, padding: "6px 12px" }}
             labelStyle={{ color: "#94a3b8", fontSize: 11 }}
-            formatter={(v) => [`${v} ${unit}`, "Carga máx."]}
+            formatter={(v) => [`${v} ${unit}`, t("maxLoad")]}
             cursor={{ stroke: "#e2e8f0", strokeWidth: 1 }}
           />
           <Line
