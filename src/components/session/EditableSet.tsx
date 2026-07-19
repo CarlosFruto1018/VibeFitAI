@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Pencil, Trash2, Check, X, Loader2 } from "lucide-react";
 import { logger } from "@/lib/logger";
 import { displayWeight, toKg, type WeightUnit } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface EditableSetProps {
   set: {
@@ -22,6 +23,7 @@ interface EditableSetProps {
 const GRID = "grid grid-cols-[2rem_1fr_1fr_1fr_4.5rem] px-4 py-2.5 items-center gap-1";
 
 export function EditableSet({ set, index, unit = "kg" }: EditableSetProps) {
+  const t = useTranslations("session");
   const router = useRouter();
   const [editing, setEditing] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -56,7 +58,7 @@ export function EditableSet({ set, index, unit = "kg" }: EditableSetProps) {
   }
 
   async function remove() {
-    if (!window.confirm("¿Borrar esta serie?")) return;
+    if (!window.confirm(t("confirmDeleteSet"))) return;
     setBusy(true);
     try {
       const res = await fetch(`/api/sets/${set.id}`, { method: "DELETE" });
@@ -77,7 +79,7 @@ export function EditableSet({ set, index, unit = "kg" }: EditableSetProps) {
           inputMode="numeric"
           value={reps}
           onChange={(e) => setReps(e.target.value)}
-          aria-label="Repeticiones"
+          aria-label={t("reptitions")}
           className="w-full max-w-16 rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-accent"
         />
         <input
@@ -86,7 +88,7 @@ export function EditableSet({ set, index, unit = "kg" }: EditableSetProps) {
           step="0.5"
           value={weight}
           onChange={(e) => setWeight(e.target.value)}
-          aria-label={`Peso en ${unit}`}
+          aria-label={t("weightInUnit", { unit })}
           className="w-full max-w-20 rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-accent"
         />
         <input
@@ -96,14 +98,14 @@ export function EditableSet({ set, index, unit = "kg" }: EditableSetProps) {
           max={10}
           value={rpe}
           onChange={(e) => setRpe(e.target.value)}
-          aria-label="RPE (1 a 10)"
+          aria-label={t("rpeLabel")}
           className="w-full max-w-14 rounded-lg border border-slate-200 px-2 py-1 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-accent"
         />
         <div className="flex items-center gap-1 justify-end">
           <button
             onClick={save}
             disabled={busy}
-            aria-label="Guardar cambios"
+            aria-label={t("saveChanges")}
             className="w-8 h-8 rounded-lg bg-primary-container hover:bg-primary-container/70 flex items-center justify-center transition-colors disabled:opacity-50"
           >
             {busy ? <Loader2 size={13} className="text-on-primary-container animate-spin" /> : <Check size={13} className="text-on-primary-container" />}
@@ -111,7 +113,7 @@ export function EditableSet({ set, index, unit = "kg" }: EditableSetProps) {
           <button
             onClick={() => setEditing(false)}
             disabled={busy}
-            aria-label="Cancelar edición"
+            aria-label={t("cancelEdit")}
             className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 flex items-center justify-center transition-colors"
           >
             <X size={13} className="text-slate-500" />
@@ -139,7 +141,7 @@ export function EditableSet({ set, index, unit = "kg" }: EditableSetProps) {
         <button
           onClick={() => setEditing(true)}
           disabled={busy}
-          aria-label="Editar serie"
+          aria-label={t("editSet")}
           className="w-8 h-8 rounded-lg hover:bg-slate-50 flex items-center justify-center transition-colors"
         >
           <Pencil size={13} className="text-slate-400" />
@@ -147,7 +149,7 @@ export function EditableSet({ set, index, unit = "kg" }: EditableSetProps) {
         <button
           onClick={remove}
           disabled={busy}
-          aria-label="Borrar serie"
+          aria-label={t("deleteSet")}
           className="w-8 h-8 rounded-lg hover:bg-red-50 flex items-center justify-center transition-colors"
         >
           {busy ? <Loader2 size={13} className="text-red-400 animate-spin" /> : <Trash2 size={13} className="text-red-400" />}

@@ -9,13 +9,14 @@ import { Card } from "@/components/ui/Card";
 import { EditableSet } from "@/components/session/EditableSet";
 import { getWeightUnit } from "@/lib/get-weight-unit";
 import { formatWeight } from "@/lib/utils";
+import { getTranslations } from "next-intl/server";
 import Link from "next/link";
 
 export default async function SessionDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const authSession = await auth();
   const userId = authSession!.user!.id!;
-  const unit = await getWeightUnit(userId);
+  const [unit, t] = await Promise.all([getWeightUnit(userId), getTranslations("session")]);
 
   const session = await db.query.sessions.findFirst({
     where: eq(sessions.id, id),
@@ -31,7 +32,7 @@ export default async function SessionDetailPage({ params }: { params: Promise<{ 
 
   const byExercise: Record<string, typeof session.workoutSets> = {};
   for (const s of session.workoutSets) {
-    const name = s.exercise?.displayName ?? s.exerciseName ?? "Ejercicio";
+    const name = s.exercise?.displayName ?? s.exerciseName ?? t("exercise");
     if (!byExercise[name]) byExercise[name] = [];
     byExercise[name].push(s);
   }
@@ -46,7 +47,7 @@ export default async function SessionDetailPage({ params }: { params: Promise<{ 
         className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-900 transition-colors w-fit"
       >
         <ArrowLeft size={15} />
-        Historial
+        {t("back")}
       </Link>
 
       {/* Header */}
@@ -55,7 +56,7 @@ export default async function SessionDetailPage({ params }: { params: Promise<{ 
           <Dumbbell size={17} className="text-inverse-primary" />
         </div>
         <div>
-          <h1 className="text-xl font-black text-slate-900">Sesión</h1>
+          <h1 className="text-xl font-black text-slate-900">{t("title")}</h1>
           <LocalDate date={session.startedAt} className="text-xs text-slate-400 mt-0.5" />
         </div>
       </div>
@@ -63,10 +64,10 @@ export default async function SessionDetailPage({ params }: { params: Promise<{ 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
         {session.totalVolumeKg && (
-          <StatCard value={formatWeight(session.totalVolumeKg, unit)} label="Volumen" />
+          <StatCard value={formatWeight(session.totalVolumeKg, unit)} label={t("volume")} />
         )}
-        <StatCard value={String(exerciseCount)} label={exerciseCount === 1 ? "Ejercicio" : "Ejercicios"} />
-        <StatCard value={String(session.workoutSets.length)} label="Series" />
+        <StatCard value={String(exerciseCount)} label={exerciseCount === 1 ? t("exercise") : t("exercisesPlural")} />
+        <StatCard value={String(session.workoutSets.length)} label={t("sets")} />
       </div>
 
       {/* Exercises */}
@@ -80,7 +81,7 @@ export default async function SessionDetailPage({ params }: { params: Promise<{ 
               </div>
               <p className="text-sm font-semibold text-slate-900">{name}</p>
               <span className="ml-auto text-xs text-slate-400 bg-slate-50 px-2 py-0.5 rounded-full">
-                {sets.length} series
+                {t("setsCount", { count: sets.length })}
               </span>
             </div>
 
@@ -89,9 +90,9 @@ export default async function SessionDetailPage({ params }: { params: Promise<{ 
               <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wide flex items-center gap-1">
                 <Hash size={9} />
               </span>
-              <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">Reps</span>
+              <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">{t("reps")}</span>
               <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wide flex items-center gap-1">
-                <Weight size={9} /> Peso
+                <Weight size={9} /> {t("weight")}
               </span>
               <span className="text-[10px] font-medium text-slate-400 uppercase tracking-wide">RPE</span>
               <span />
@@ -112,7 +113,7 @@ export default async function SessionDetailPage({ params }: { params: Promise<{ 
         <Card className="p-4">
           <div className="flex items-center gap-2 mb-2">
             <FileText size={14} className="text-slate-400" />
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Resumen</p>
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{t("summary")}</p>
           </div>
           <p className="text-sm text-slate-700 leading-relaxed">{session.summaryText}</p>
         </Card>

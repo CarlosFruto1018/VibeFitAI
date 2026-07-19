@@ -5,6 +5,7 @@ import type { Session, WorkoutSet, Exercise } from "@/lib/db/schema";
 import { Card } from "@/components/ui/Card";
 import { Dumbbell, Clock, ChevronRight } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 
 type SetWithExercise = WorkoutSet & { exercise: Exercise | null };
 type SessionWithSets = Session & { workoutSets: SetWithExercise[] };
@@ -15,9 +16,11 @@ interface SessionCardProps {
 }
 
 export function SessionCard({ session, unit = "kg" }: SessionCardProps) {
+  const t = useTranslations("history");
+  const tCommon = useTranslations("session");
   const byExercise = session.workoutSets.reduce<Record<string, SetWithExercise[]>>(
     (acc, s) => {
-      const name = s.exercise?.displayName ?? s.exerciseName ?? "Ejercicio";
+      const name = s.exercise?.displayName ?? s.exerciseName ?? tCommon("exercise");
       acc[name] = [...(acc[name] ?? []), s];
       return acc;
     },
@@ -34,7 +37,7 @@ export function SessionCard({ session, unit = "kg" }: SessionCardProps) {
           <div>
             <p className="text-xs text-slate-400 font-medium">{formatDate(session.startedAt)}</p>
             <p className="text-sm font-semibold text-slate-900 mt-0.5">
-              {exercises.length} ejercicio{exercises.length !== 1 ? "s" : ""}
+              {t("exercisesCount", { count: exercises.length })}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -57,15 +60,15 @@ export function SessionCard({ session, unit = "kg" }: SessionCardProps) {
               <div key={name} className="flex items-center justify-between">
                 <span className="text-sm text-slate-700 truncate max-w-[60%]">{name}</span>
                 <span className="text-xs text-slate-400">
-                  {sets.length} series
+                  {t("setsShort", { count: sets.length })}
                   {maxWeight > 0 && ` · ${displayWeight(maxWeight, unit)} ${unit}`}
-                  {totalReps > 0 && ` · ${totalReps} reps`}
+                  {totalReps > 0 && ` · ${t("repsShort", { count: totalReps })}`}
                 </span>
               </div>
             );
           })}
           {exercises.length > 5 && (
-            <p className="text-xs text-slate-400">+{exercises.length - 5} más</p>
+            <p className="text-xs text-slate-400">{t("more", { count: exercises.length - 5 })}</p>
           )}
         </div>
 

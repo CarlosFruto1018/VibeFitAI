@@ -8,14 +8,21 @@ import { TZDate } from "@date-fns/tz";
 import { getUserTimeZone } from "@/lib/timezone";
 import { getWeightUnit } from "@/lib/get-weight-unit";
 import { formatWeight } from "@/lib/utils";
-import { es } from "date-fns/locale";
+import { es, enUS } from "date-fns/locale";
+import { getTranslations, getLocale } from "next-intl/server";
 import { Dumbbell, ChevronRight } from "lucide-react";
 import { RecordPage } from "@/components/record/RecordPage";
 
 export default async function RecordRoute() {
   const session = await auth();
   const userId = session!.user!.id!;
-  const [tz, unit] = await Promise.all([getUserTimeZone(), getWeightUnit(userId)]);
+  const [tz, unit, t, locale] = await Promise.all([
+    getUserTimeZone(),
+    getWeightUnit(userId),
+    getTranslations("record"),
+    getLocale(),
+  ]);
+  const dateLocale = locale === "en" ? enUS : es;
 
   const recent = await db.query.sessions.findMany({
     where: eq(sessions.userId, userId),
@@ -27,9 +34,9 @@ export default async function RecordRoute() {
     <div className="flex flex-col gap-6 pt-2">
       {/* Header */}
       <section>
-        <h1 className="text-3xl font-black tracking-tight text-on-surface">Nueva Actividad</h1>
+        <h1 className="text-3xl font-black tracking-tight text-on-surface">{t("title")}</h1>
         <p className="text-sm text-on-surface-variant mt-1">
-          Elige cómo quieres registrar tu entrenamiento hoy.
+          {t("subtitle")}
         </p>
       </section>
 
@@ -40,9 +47,9 @@ export default async function RecordRoute() {
       {recent.length > 0 && (
         <section className="flex flex-col gap-3">
           <div className="flex justify-between items-center px-1">
-            <h3 className="text-base font-bold text-on-surface">Historial Reciente</h3>
+            <h3 className="text-base font-bold text-on-surface">{t("recentHistory")}</h3>
             <Link href="/history" className="text-xs font-medium text-accent">
-              Ver todo
+              {t("viewAll")}
             </Link>
           </div>
           <div className="flex flex-col gap-2">
@@ -58,7 +65,7 @@ export default async function RecordRoute() {
                   </div>
                   <div className="flex flex-col">
                     <span className="text-sm font-bold text-on-surface capitalize">
-                      {format(new TZDate(s.startedAt, tz), "EEEE d MMM", { locale: es })}
+                      {format(new TZDate(s.startedAt, tz), "EEEE d MMM", { locale: dateLocale })}
                     </span>
                     <span className="text-xs text-on-surface-variant">
                       {format(new TZDate(s.startedAt, tz), "HH:mm")}

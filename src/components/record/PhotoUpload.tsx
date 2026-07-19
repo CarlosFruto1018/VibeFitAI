@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { Camera, X, ImagePlus, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface PhotoUploadProps {
   onSelected: (file: File) => void;
@@ -11,6 +12,7 @@ interface PhotoUploadProps {
 }
 
 export function PhotoUpload({ onSelected, disabled, uploading }: PhotoUploadProps) {
+  const t = useTranslations("record.photoUpload");
   const [preview, setPreview] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -34,14 +36,14 @@ export function PhotoUpload({ onSelected, disabled, uploading }: PhotoUploadProp
           {/* eslint-disable-next-line @next/next/no-img-element -- preview local (object URL), next/image no aplica */}
           <img
             src={preview}
-            alt="Foto de tu entrenamiento pendiente de análisis"
+            alt={t("previewAlt")}
             className="w-full h-56 object-cover"
           />
           <button
             onClick={handleClear}
             disabled={uploading}
             className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm rounded-full w-10 h-10 flex items-center justify-center shadow-sm hover:bg-white transition-colors disabled:opacity-50"
-            aria-label="Eliminar foto"
+            aria-label={t("removePhoto")}
           >
             <X size={16} className="text-slate-700" />
           </button>
@@ -49,10 +51,10 @@ export function PhotoUpload({ onSelected, disabled, uploading }: PhotoUploadProp
             {uploading ? (
               <p className="text-white text-xs font-medium flex items-center gap-1.5">
                 <Loader2 size={12} className="animate-spin" />
-                Subiendo y analizando...
+                {t("uploadingAnalyzing")}
               </p>
             ) : (
-              <p className="text-white text-xs font-medium">VibeFitAI analizará esta imagen</p>
+              <p className="text-white text-xs font-medium">{t("willAnalyze")}</p>
             )}
           </div>
         </div>
@@ -71,12 +73,12 @@ export function PhotoUpload({ onSelected, disabled, uploading }: PhotoUploadProp
             <Camera size={24} className="text-slate-400" />
           </div>
           <div className="text-center">
-            <p className="text-sm font-medium text-slate-700">Sube una foto</p>
-            <p className="text-xs text-slate-400 mt-0.5">Pizarra, máquina o nota del gym</p>
+            <p className="text-sm font-medium text-slate-700">{t("uploadPhoto")}</p>
+            <p className="text-xs text-slate-400 mt-0.5">{t("uploadHint")}</p>
           </div>
           <div className="flex items-center gap-1.5 text-xs text-on-primary-container font-medium bg-primary-container px-3 py-1.5 rounded-full">
             <ImagePlus size={12} />
-            Cámara o galería
+            {t("cameraOrGallery")}
           </div>
         </button>
       )}

@@ -6,6 +6,7 @@ import { PhotoUpload } from "./PhotoUpload";
 import { Mic, Camera, Sparkles, Loader2, CheckCircle } from "lucide-react";
 import { cn, formatWeight, type WeightUnit } from "@/lib/utils";
 import { Textarea } from "@/components/ui/Input";
+import { useTranslations } from "next-intl";
 
 type Capture = "audio" | "photo" | null;
 
@@ -30,6 +31,7 @@ const POLL_INTERVAL_MS = 3000;
 const POLL_MAX_ATTEMPTS = 20; // ~1 minuto
 
 export function RecordPage({ unit = "kg", onResult }: RecordPageProps) {
+  const t = useTranslations("record");
   const [capture, setCapture] = useState<Capture>(null);
   const [textInput, setTextInput] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -52,11 +54,11 @@ export function RecordPage({ unit = "kg", onResult }: RecordPageProps) {
     const presignRes = await fetch(`/api/input/presign?type=${type}&mimeType=${encodeURIComponent(mimeType)}`);
     const presignData = await presignRes.json();
     if (!presignRes.ok) {
-      throw new Error(typeof presignData.error === "string" ? presignData.error : "Error al obtener URL de subida");
+      throw new Error(typeof presignData.error === "string" ? presignData.error : t("errors.uploadUrlFailed"));
     }
     const { uploadUrl, storageKey, publicUrl } = presignData;
     const putRes = await fetch(uploadUrl, { method: "PUT", body: blob, headers: { "Content-Type": mimeType } });
-    if (!putRes.ok) throw new Error("Error al subir el archivo");
+    if (!putRes.ok) throw new Error(t("errors.uploadFailed"));
     return { storageKey, publicUrl };
   }
 
@@ -64,7 +66,7 @@ export function RecordPage({ unit = "kg", onResult }: RecordPageProps) {
   function pollInputStatus(rawInputId: string, attempt = 0) {
     if (attempt >= POLL_MAX_ATTEMPTS) {
       setProcessing(false);
-      setError("El procesamiento está tardando más de lo normal. Revisa tu historial en unos minutos.");
+      setError(t("errors.processingTimeout"));
       return;
     }
     pollTimer.current = setTimeout(async () => {
@@ -86,7 +88,7 @@ export function RecordPage({ unit = "kg", onResult }: RecordPageProps) {
         }
         if (data.status === "error") {
           setProcessing(false);
-          setError(data.error ?? "No pudimos procesar tu archivo.");
+          setError(data.error ?? t("errors.processingFailed"));
           return;
         }
         pollInputStatus(rawInputId, attempt + 1);
@@ -116,7 +118,7 @@ export function RecordPage({ unit = "kg", onResult }: RecordPageProps) {
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(typeof err.error === "string" ? err.error : "Error del servidor");
+      throw new Error(typeof err.error === "string" ? err.error : t("errors.serverError"));
     }
     return res.json() as Promise<RecordResult>;
   }
@@ -130,7 +132,7 @@ export function RecordPage({ unit = "kg", onResult }: RecordPageProps) {
         setTextInput("");
         handleResponse(data);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Error desconocido");
+        setError(e instanceof Error ? e.message : t("errors.unknown"));
       }
     });
   }
@@ -144,7 +146,7 @@ export function RecordPage({ unit = "kg", onResult }: RecordPageProps) {
         const data = await submitText(transcript);
         handleResponse(data);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Error al procesar el audio");
+        setError(e instanceof Error ? e.message : t("errors.audioFailed"));
       }
     });
   }
@@ -162,13 +164,13 @@ export function RecordPage({ unit = "kg", onResult }: RecordPageProps) {
       });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        setError(typeof err.error === "string" ? err.error : "Error al procesar la imagen");
+        setError(typeof err.error === "string" ? err.error : t("errors.imageFailed"));
         return;
       }
       const data = await res.json();
       handleResponse(data);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Error al procesar la imagen");
+      setError(e instanceof Error ? e.message : t("errors.imageFailed"));
     } finally {
       setIsUploading(false);
     }
@@ -199,8 +201,8 @@ export function RecordPage({ unit = "kg", onResult }: RecordPageProps) {
             <Mic size={20} className="text-white" />
           </div>
           <div className="text-center">
-            <p className="text-sm font-semibold text-on-surface">Grabar Audio</p>
-            <p className="text-[11px] text-on-surface-variant mt-0.5">VibeFitAI transcribe tu rutina</p>
+            <p className="text-sm font-semibold text-on-surface">{t("recordAudio.title")}</p>
+            <p className="text-[11px] text-on-surface-variant mt-0.5">{t("recordAudio.subtitle")}</p>
           </div>
         </button>
 
@@ -217,8 +219,8 @@ export function RecordPage({ unit = "kg", onResult }: RecordPageProps) {
             <Camera size={20} className="text-on-primary-container" />
           </div>
           <div className="text-center">
-            <p className="text-sm font-semibold text-on-surface">Foto del Tablero</p>
-            <p className="text-[11px] text-on-surface-variant mt-0.5">Escanear resultados</p>
+            <p className="text-sm font-semibold text-on-surface">{t("photoBoard.title")}</p>
+            <p className="text-[11px] text-on-surface-variant mt-0.5">{t("photoBoard.subtitle")}</p>
           </div>
         </button>
       </section>
@@ -240,8 +242,8 @@ export function RecordPage({ unit = "kg", onResult }: RecordPageProps) {
         <div className="bg-primary-container/60 border border-primary-container rounded-2xl px-4 py-3 flex items-center gap-3 animate-fade-in">
           <Loader2 size={16} className="text-accent animate-spin shrink-0" />
           <div>
-            <p className="text-sm font-medium text-on-primary-container">Procesando tu entrenamiento...</p>
-            <p className="text-xs text-on-primary-container/70 mt-0.5">La IA está analizando tu archivo. Suele tardar unos segundos.</p>
+            <p className="text-sm font-medium text-on-primary-container">{t("processing")}</p>
+            <p className="text-xs text-on-primary-container/70 mt-0.5">{t("processingHint")}</p>
           </div>
         </div>
       )}
@@ -252,16 +254,16 @@ export function RecordPage({ unit = "kg", onResult }: RecordPageProps) {
           <div className="absolute -top-10 -right-10 w-32 h-32 bg-accent/30 blur-3xl rounded-full" />
           <p className="relative text-xs font-semibold text-inverse-primary uppercase tracking-widest flex items-center gap-1.5 mb-3">
             <Sparkles size={12} />
-            VibeFitAI detectó
+            {t("detected")}
           </p>
           <div className="relative flex flex-col gap-2">
             {detectedExercises.map((ex, i) => {
               const setCount = ex.sets.length;
               const firstSet = ex.sets[0];
               const summary = [
-                firstSet?.reps ? `${setCount}×${firstSet.reps}` : `${setCount} series`,
+                firstSet?.reps ? `${setCount}×${firstSet.reps}` : t("sets", { count: setCount }),
                 firstSet?.weight_kg ? formatWeight(firstSet.weight_kg, unit, 1) : null,
-                firstSet?.duration_sec ? `${Math.round(firstSet.duration_sec / 60)} min` : null,
+                firstSet?.duration_sec ? t("minutes", { count: Math.round(firstSet.duration_sec / 60) }) : null,
               ].filter(Boolean).join(" · ");
               return (
                 <div key={i} className="flex items-center justify-between">
@@ -282,12 +284,12 @@ export function RecordPage({ unit = "kg", onResult }: RecordPageProps) {
 
       {/* Entrada Manual */}
       <form onSubmit={handleText} className="flex flex-col gap-3">
-        <span className="text-xs font-medium text-on-surface-variant ml-1">Entrada Manual</span>
+        <span className="text-xs font-medium text-on-surface-variant ml-1">{t("manualEntry")}</span>
         <Textarea
-          label="Describe tu entrenamiento"
+          label={t("describeWorkout")}
           value={textInput}
           onChange={(e) => setTextInput(e.target.value)}
-          placeholder="Ej: 3 series de 10 reps Press de Banca 60kg..."
+          placeholder={t("textPlaceholder")}
           rows={4}
           disabled={busy}
         />
@@ -299,12 +301,12 @@ export function RecordPage({ unit = "kg", onResult }: RecordPageProps) {
           {isPending ? (
             <>
               <Loader2 size={17} className="animate-spin" />
-              Guardando...
+              {t("saving")}
             </>
           ) : (
             <>
               <CheckCircle size={17} />
-              Registrar
+              {t("logButton")}
             </>
           )}
         </button>

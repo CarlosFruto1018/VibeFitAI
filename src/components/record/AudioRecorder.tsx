@@ -3,6 +3,7 @@
 import { Mic, Square, RotateCcw } from "lucide-react";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface AudioRecorderProps {
   onRecorded: (transcript: string) => void;
@@ -10,6 +11,7 @@ interface AudioRecorderProps {
 }
 
 export function AudioRecorder({ onRecorded, disabled }: AudioRecorderProps) {
+  const t = useTranslations("record.audioRecorder");
   const { state, transcript, start, stop, reset, error, supported } =
     useSpeechRecognition("es-ES");
 
@@ -32,7 +34,7 @@ export function AudioRecorder({ onRecorded, disabled }: AudioRecorderProps) {
   if (!supported) {
     return (
       <div className="bg-amber-50 border border-amber-100 rounded-2xl p-4 text-center">
-        <p className="text-sm text-amber-700">Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.</p>
+        <p className="text-sm text-amber-700">{t("unsupported")}</p>
       </div>
     );
   }
@@ -60,7 +62,7 @@ export function AudioRecorder({ onRecorded, disabled }: AudioRecorderProps) {
               : "bg-primary hover:bg-primary/85 shadow-lg shadow-primary/20",
             disabled && "opacity-40 cursor-not-allowed"
           )}
-          aria-label={isRecording ? "Detener grabación" : isDone ? "Grabar de nuevo" : "Iniciar grabación"}
+          aria-label={isRecording ? t("stopRecording") : isDone ? t("recordAgain") : t("startRecording")}
         >
           {isRecording
             ? <Square size={22} className="text-white" fill="white" />
@@ -70,10 +72,10 @@ export function AudioRecorder({ onRecorded, disabled }: AudioRecorderProps) {
       </div>
 
       <p className="text-sm text-slate-500 text-center">
-        {state === "idle" && "Toca para hablar"}
-        {state === "recording" && <span className="text-red-500 font-medium">Escuchando... toca para detener</span>}
-        {state === "done" && !transcript && "Procesando..."}
-        {state === "done" && !transcript && "No se detectó audio, intenta de nuevo"}
+        {state === "idle" && t("tapToSpeak")}
+        {state === "recording" && <span className="text-red-500 font-medium">{t("listening")}</span>}
+        {state === "done" && !transcript && t("processing")}
+        {state === "done" && !transcript && t("notDetected")}
       </p>
 
       {transcript && isDone && (
@@ -87,12 +89,12 @@ export function AudioRecorder({ onRecorded, disabled }: AudioRecorderProps) {
               disabled={disabled}
               className="flex-1 py-3 rounded-2xl bg-primary hover:bg-primary/90 text-white text-sm font-semibold transition-colors disabled:opacity-40 shadow-sm shadow-primary/15"
             >
-              Guardar entrenamiento
+              {t("saveWorkout")}
             </button>
             <button
               onClick={reset}
               className="w-12 h-12 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors flex items-center justify-center"
-              aria-label="Repetir"
+              aria-label={t("repeat")}
             >
               <RotateCcw size={16} />
             </button>

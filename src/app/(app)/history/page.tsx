@@ -5,12 +5,13 @@ import { eq, desc } from "drizzle-orm";
 import { SessionCard } from "@/components/session/SessionCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { getWeightUnit } from "@/lib/get-weight-unit";
+import { getTranslations } from "next-intl/server";
 import { History, Dumbbell } from "lucide-react";
 
 export default async function HistoryPage() {
   const session = await auth();
   const userId = session!.user!.id!;
-  const unit = await getWeightUnit(userId);
+  const [unit, t] = await Promise.all([getWeightUnit(userId), getTranslations("history")]);
 
   // Si la consulta falla, el error.tsx de la ruta muestra un estado amigable.
   const allSessions = await db.query.sessions.findMany({
@@ -30,9 +31,9 @@ export default async function HistoryPage() {
           <History size={16} className="text-inverse-primary" />
         </div>
         <div>
-          <h1 className="text-xl font-black text-slate-900">Historial</h1>
+          <h1 className="text-xl font-black text-slate-900">{t("title")}</h1>
           {allSessions.length > 0 && (
-            <p className="text-xs text-slate-400">{allSessions.length} sesión{allSessions.length !== 1 ? "es" : ""} registradas</p>
+            <p className="text-xs text-slate-400">{t("sessionsRegistered", { count: allSessions.length })}</p>
           )}
         </div>
       </div>
@@ -40,10 +41,10 @@ export default async function HistoryPage() {
       {allSessions.length === 0 ? (
         <EmptyState
           icon={<Dumbbell size={24} className="text-slate-400" />}
-          title="Sin sesiones aún"
-          description="Registra tu primer entrenamiento para verlo aquí."
+          title={t("emptyTitle")}
+          description={t("emptyDesc")}
           actionHref="/record"
-          actionLabel="+ Registrar entrenamiento"
+          actionLabel={t("emptyAction")}
         />
       ) : (
         <div className="flex flex-col gap-3">
