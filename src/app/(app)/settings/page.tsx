@@ -7,7 +7,7 @@ import { format } from "date-fns";
 import { TZDate } from "@date-fns/tz";
 import { getUserTimeZone, nowInTimeZone } from "@/lib/timezone";
 import { Flame, Dumbbell } from "lucide-react";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { isLocale, DEFAULT_LOCALE } from "@/i18n/config";
 import { SettingsClient } from "./SettingsClient";
 
@@ -16,6 +16,7 @@ export default async function SettingsPage() {
   const userId = session!.user!.id!;
   const rawLocale = await getLocale();
   const locale = isLocale(rawLocale) ? rawLocale : DEFAULT_LOCALE;
+  const t = await getTranslations("settings");
 
   // name/image se leen de la DB, no de la sesión: el JWT no se refresca al
   // editarlos desde este mismo panel.
@@ -93,14 +94,14 @@ export default async function SettingsPage() {
           <Flame size={18} className="text-accent" />
           <span className="text-2xl font-black font-mono text-on-surface">{streak}</span>
           <span className="text-[10px] font-medium text-on-surface-variant uppercase tracking-wider">
-            Días Racha
+            {t("streakDays")}
           </span>
         </div>
         <div className="bg-white p-4 rounded-2xl border border-outline-variant/50 flex flex-col items-center justify-center gap-1 shadow-card">
           <Dumbbell size={18} className="text-accent" />
           <span className="text-2xl font-black font-mono text-on-surface">{recentSessions.length}</span>
           <span className="text-[10px] font-medium text-on-surface-variant uppercase tracking-wider">
-            Sesiones
+            {t("sessions")}
           </span>
         </div>
       </section>
@@ -125,15 +126,15 @@ export default async function SettingsPage() {
         <div className="absolute -right-4 -bottom-4 w-32 h-32 bg-accent/40 rounded-full blur-3xl" />
         <div className="absolute -right-10 -top-10 w-40 h-40 bg-inverse-primary/20 rounded-full blur-3xl" />
         <div className="relative flex flex-col gap-1.5">
-          <h4 className="text-lg font-bold">Optimiza tus resultados</h4>
+          <h4 className="text-lg font-bold">{t("optimizeTitle")}</h4>
           <p className="text-sm text-white/70 max-w-[85%]">
-            Revisa tu progresión de cargas, récords y análisis de VibeFitAI.
+            {t("optimizeDesc")}
           </p>
           <Link
             href="/progress"
             className="mt-3 self-start bg-primary-container text-on-primary-container px-6 py-2 rounded-full text-[11px] font-mono font-bold uppercase tracking-widest hover:opacity-90 transition-opacity active:scale-95"
           >
-            Ver Reporte IA
+            {t("viewAiReport")}
           </Link>
         </div>
       </section>

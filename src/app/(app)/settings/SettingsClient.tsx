@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Sliders, Scale, Ruler, Target, CalendarDays, Camera, LogOut, Trash2, CheckCircle, XCircle, Loader2, User, Languages } from "lucide-react";
 import { cn, displayWeight, toKg, type WeightUnit } from "@/lib/utils";
 import { LOCALE_COOKIE, type Locale } from "@/i18n/config";
+import { useTranslations } from "next-intl";
 
 interface Props {
   locale: Locale;
@@ -31,6 +32,7 @@ const FIELD =
 const LABEL = "text-xs font-medium text-on-surface-variant flex items-center gap-1.5";
 
 export function SettingsClient({ locale, profile, signOutAction }: Props) {
+  const t = useTranslations("settings");
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [changingLocale, setChangingLocale] = useState<Locale | null>(null);
@@ -63,7 +65,8 @@ export function SettingsClient({ locale, profile, signOutAction }: Props) {
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
   const [deleting, setDeleting] = useState(false);
 
-  const canDelete = deleteConfirmText === "ELIMINAR";
+  const confirmWord = t("confirmDeleteWord");
+  const canDelete = deleteConfirmText === confirmWord;
 
   function handleUnitChange(next: WeightUnit) {
     // Convierte el número que ya está en el campo para que siga representando
@@ -84,7 +87,7 @@ export function SettingsClient({ locale, profile, signOutAction }: Props) {
     if (!file) return;
     setPhotoError(null);
     if (file.size > 5 * 1024 * 1024) {
-      setPhotoError("La imagen no puede superar 5 MB.");
+      setPhotoError(t("errors.photoTooLarge"));
       return;
     }
     setUploadingPhoto(true);
@@ -94,7 +97,7 @@ export function SettingsClient({ locale, profile, signOutAction }: Props) {
       );
       const presign = await presignRes.json().catch(() => ({}));
       if (!presignRes.ok) {
-        setPhotoError(typeof presign.error === "string" ? presign.error : "No pudimos preparar la subida.");
+        setPhotoError(typeof presign.error === "string" ? presign.error : t("errors.uploadPrepareFailed"));
         return;
       }
       const putRes = await fetch(presign.uploadUrl, {
@@ -103,7 +106,7 @@ export function SettingsClient({ locale, profile, signOutAction }: Props) {
         headers: { "Content-Type": file.type },
       });
       if (!putRes.ok) {
-        setPhotoError("Error al subir la imagen. Intenta de nuevo.");
+        setPhotoError(t("errors.uploadFailed"));
         return;
       }
       const patchRes = await fetch("/api/account", {
@@ -112,12 +115,12 @@ export function SettingsClient({ locale, profile, signOutAction }: Props) {
         body: JSON.stringify({ imageKey: presign.storageKey }),
       });
       if (!patchRes.ok) {
-        setPhotoError("No pudimos guardar tu nueva foto.");
+        setPhotoError(t("errors.savePhotoFailed"));
         return;
       }
       router.refresh();
     } catch {
-      setPhotoError("Error de conexión al subir la foto.");
+      setPhotoError(t("errors.uploadConnectionError"));
     } finally {
       setUploadingPhoto(false);
     }
@@ -170,7 +173,7 @@ export function SettingsClient({ locale, profile, signOutAction }: Props) {
   return (
     <div className="flex flex-col gap-4">
       <h3 className="text-[10px] font-mono font-semibold text-on-surface-variant uppercase tracking-widest px-1 -mb-1">
-        Ajustes de Cuenta
+        {t("accountSettings")}
       </h3>
 
       {/* Perfil personal */}
@@ -180,8 +183,8 @@ export function SettingsClient({ locale, profile, signOutAction }: Props) {
             <User size={15} className="text-on-primary-container" />
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-on-surface">Perfil</h2>
-            <p className="text-[11px] text-on-surface-variant">Foto, nombre y datos personales</p>
+            <h2 className="text-sm font-semibold text-on-surface">{t("profile.title")}</h2>
+            <p className="text-[11px] text-on-surface-variant">{t("profile.subtitle")}</p>
           </div>
         </div>
 
@@ -204,9 +207,9 @@ export function SettingsClient({ locale, profile, signOutAction }: Props) {
                 className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-container-low border border-outline-variant text-xs font-semibold text-on-surface hover:bg-surface-container transition-colors active:scale-[0.98] disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
                 {uploadingPhoto ? <Loader2 size={13} className="animate-spin" /> : <Camera size={13} />}
-                {uploadingPhoto ? "Subiendo..." : "Cambiar foto"}
+                {uploadingPhoto ? t("uploadingPhoto") : t("changePhoto")}
               </button>
-              <p className="text-[10px] text-on-surface-variant/70">JPG, PNG o WebP · máx. 5 MB</p>
+              <p className="text-[10px] text-on-surface-variant/70">{t("photoHint")}</p>
             </div>
             <input
               ref={fileInputRef}
@@ -214,7 +217,7 @@ export function SettingsClient({ locale, profile, signOutAction }: Props) {
               accept="image/jpeg,image/png,image/webp"
               onChange={handlePhotoChange}
               className="hidden"
-              aria-label="Elegir foto de perfil"
+              aria-label={t("choosePhoto")}
             />
           </div>
 
@@ -224,13 +227,13 @@ export function SettingsClient({ locale, profile, signOutAction }: Props) {
 
           {/* Nombre */}
           <div className="flex flex-col gap-2">
-            <label htmlFor="profile-name" className={LABEL}>Nombre</label>
+            <label htmlFor="profile-name" className={LABEL}>{t("name")}</label>
             <input
               id="profile-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Tu nombre"
+              placeholder={t("namePlaceholder")}
               maxLength={100}
               className={FIELD}
             />
@@ -240,7 +243,7 @@ export function SettingsClient({ locale, profile, signOutAction }: Props) {
           <div className="flex flex-col gap-2">
             <label htmlFor="profile-birthdate" className={LABEL}>
               <CalendarDays size={12} />
-              Fecha de nacimiento
+              {t("birthDate")}
             </label>
             <input
               id="profile-birthdate"
@@ -261,8 +264,8 @@ export function SettingsClient({ locale, profile, signOutAction }: Props) {
             <Languages size={15} className="text-on-primary-container" />
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-on-surface">Idioma</h2>
-            <p className="text-[11px] text-on-surface-variant">Idioma de la aplicación</p>
+            <h2 className="text-sm font-semibold text-on-surface">{t("language.title")}</h2>
+            <p className="text-[11px] text-on-surface-variant">{t("language.subtitle")}</p>
           </div>
         </div>
         <div className="p-4 flex gap-1.5">
@@ -292,8 +295,8 @@ export function SettingsClient({ locale, profile, signOutAction }: Props) {
             <Sliders size={15} className="text-on-primary-container" />
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-on-surface">Preferencias de Entrenamiento</h2>
-            <p className="text-[11px] text-on-surface-variant">Meta semanal, unidades y medidas</p>
+            <h2 className="text-sm font-semibold text-on-surface">{t("training.title")}</h2>
+            <p className="text-[11px] text-on-surface-variant">{t("training.subtitle")}</p>
           </div>
         </div>
 
@@ -302,13 +305,13 @@ export function SettingsClient({ locale, profile, signOutAction }: Props) {
           <div className="flex flex-col gap-2">
             <label className={LABEL}>
               <Target size={12} />
-              Meta semanal (sesiones)
+              {t("weeklyGoal")}
             </label>
             <div className="flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => setWeeklyGoal((g) => Math.max(1, g - 1))}
-                aria-label="Reducir meta semanal"
+                aria-label={t("decreaseGoal")}
                 className="w-9 h-9 rounded-xl bg-surface-container-low border border-outline-variant text-on-surface font-bold hover:bg-surface-container transition-colors active:scale-95"
               >
                 −
@@ -317,18 +320,18 @@ export function SettingsClient({ locale, profile, signOutAction }: Props) {
               <button
                 type="button"
                 onClick={() => setWeeklyGoal((g) => Math.min(14, g + 1))}
-                aria-label="Aumentar meta semanal"
+                aria-label={t("increaseGoal")}
                 className="w-9 h-9 rounded-xl bg-surface-container-low border border-outline-variant text-on-surface font-bold hover:bg-surface-container transition-colors active:scale-95"
               >
                 +
               </button>
-              <span className="text-xs text-on-surface-variant">días de entrenamiento por semana</span>
+              <span className="text-xs text-on-surface-variant">{t("daysPerWeek")}</span>
             </div>
           </div>
 
           {/* Units */}
           <div className="flex flex-col gap-2">
-            <label className={LABEL}>Unidades de peso</label>
+            <label className={LABEL}>{t("weightUnits")}</label>
             <div className="flex gap-1.5">
               {(["kg", "lb"] as const).map((unit) => (
                 <button
@@ -351,14 +354,14 @@ export function SettingsClient({ locale, profile, signOutAction }: Props) {
           <div className="flex flex-col gap-2">
             <label htmlFor="profile-weight" className={LABEL}>
               <Scale size={12} />
-              Peso corporal ({preferredUnits})
+              {t("bodyWeight", { unit: preferredUnits })}
             </label>
             <input
               id="profile-weight"
               type="number"
               value={bodyWeight}
               onChange={(e) => setBodyWeight(e.target.value)}
-              placeholder="Ej: 75"
+              placeholder={t("bodyWeightPlaceholder")}
               className={FIELD}
             />
           </div>
@@ -367,14 +370,14 @@ export function SettingsClient({ locale, profile, signOutAction }: Props) {
           <div className="flex flex-col gap-2">
             <label htmlFor="profile-height" className={LABEL}>
               <Ruler size={12} />
-              Estatura (cm)
+              {t("height")}
             </label>
             <input
               id="profile-height"
               type="number"
               value={heightCm}
               onChange={(e) => setHeightCm(e.target.value)}
-              placeholder="Ej: 175"
+              placeholder={t("heightPlaceholder")}
               min={80}
               max={250}
               className={FIELD}
@@ -387,7 +390,7 @@ export function SettingsClient({ locale, profile, signOutAction }: Props) {
             disabled={saving}
             className="w-full py-3 rounded-xl bg-primary hover:bg-primary/90 text-white text-sm font-semibold transition-all duration-200 active:scale-[0.98] disabled:opacity-40 shadow-sm shadow-primary/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
           >
-            {saving ? "Guardando..." : "Guardar cambios"}
+            {saving ? t("saving") : t("saveChanges")}
           </button>
 
           {saveStatus && (
@@ -396,8 +399,8 @@ export function SettingsClient({ locale, profile, signOutAction }: Props) {
               saveStatus === "ok" ? "text-on-primary-container bg-primary-container/70" : "text-error bg-error-container/60"
             )}>
               {saveStatus === "ok"
-                ? <><CheckCircle size={14} /> Cambios guardados</>
-                : <><XCircle size={14} className="shrink-0" /> {saveError ?? "Error al guardar"}</>
+                ? <><CheckCircle size={14} /> {t("changesSaved")}</>
+                : <><XCircle size={14} className="shrink-0" /> {saveError ?? t("saveError")}</>
               }
             </div>
           )}
@@ -411,7 +414,7 @@ export function SettingsClient({ locale, profile, signOutAction }: Props) {
           className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl bg-error-container/70 hover:bg-error-container text-error text-sm font-semibold transition-colors active:scale-[0.98]"
         >
           <LogOut size={15} />
-          Cerrar sesión
+          {t("signOut")}
         </button>
       </form>
 
@@ -419,12 +422,11 @@ export function SettingsClient({ locale, profile, signOutAction }: Props) {
       <section className="bg-white border border-outline-variant/70 rounded-2xl overflow-hidden shadow-card">
         <div className="flex items-center gap-2 px-4 pt-4 pb-3 border-b border-outline-variant/40">
           <Trash2 size={14} className="text-on-surface-variant" />
-          <h2 className="text-sm font-semibold text-on-surface">Eliminar cuenta</h2>
+          <h2 className="text-sm font-semibold text-on-surface">{t("deleteAccount.title")}</h2>
         </div>
         <div className="p-4 flex flex-col gap-3">
           <p className="text-xs text-on-surface-variant leading-relaxed">
-            Esto borra permanentemente tu cuenta y todos tus datos: sesiones, series, récords y perfil.
-            Esta acción no se puede deshacer.
+            {t("deleteWarning")}
           </p>
 
           {!showDeleteConfirm ? (
@@ -432,16 +434,16 @@ export function SettingsClient({ locale, profile, signOutAction }: Props) {
               onClick={() => setShowDeleteConfirm(true)}
               className="w-full py-2.5 rounded-xl border border-slate-200 text-slate-500 text-sm font-medium hover:border-red-200 hover:text-red-500 hover:bg-red-50/50 transition-colors"
             >
-              Eliminar mi cuenta
+              {t("deleteMyAccount")}
             </button>
           ) : (
             <div className="flex flex-col gap-3">
               <div className="bg-red-50 border border-red-100 rounded-xl p-3 flex flex-col gap-1.5">
-                <p className="text-xs font-semibold text-red-700">Confirma que quieres borrar todo</p>
+                <p className="text-xs font-semibold text-red-700">{t("confirmDeleteTitle")}</p>
                 <p className="text-xs text-red-500/80">
-                  Escribe{" "}
-                  <span className="font-mono font-bold tracking-wider">ELIMINAR</span>{" "}
-                  en mayúsculas para continuar.
+                  {t("confirmDeleteHint")}{" "}
+                  <span className="font-mono font-bold tracking-wider">{confirmWord}</span>{" "}
+                  {t("confirmDeleteSuffix")}
                 </p>
               </div>
 
@@ -449,7 +451,7 @@ export function SettingsClient({ locale, profile, signOutAction }: Props) {
                 type="text"
                 value={deleteConfirmText}
                 onChange={(e) => setDeleteConfirmText(e.target.value)}
-                placeholder="ELIMINAR"
+                placeholder={confirmWord}
                 autoComplete="off"
                 className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm text-slate-900 placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-red-300 focus:border-transparent font-mono tracking-widest transition-all"
               />
@@ -459,14 +461,14 @@ export function SettingsClient({ locale, profile, signOutAction }: Props) {
                   onClick={() => { setShowDeleteConfirm(false); setDeleteConfirmText(""); }}
                   className="flex-1 py-2.5 rounded-xl bg-slate-100 text-slate-700 text-sm font-medium transition-colors hover:bg-slate-200"
                 >
-                  Cancelar
+                  {t("cancel")}
                 </button>
                 <button
                   onClick={handleDelete}
                   disabled={!canDelete || deleting}
                   className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-red-500 hover:bg-red-600 text-white disabled:bg-slate-200 disabled:text-slate-400"
                 >
-                  {deleting ? "Eliminando..." : "Eliminar cuenta"}
+                  {deleting ? t("deleting") : t("deleteMyAccount")}
                 </button>
               </div>
             </div>
