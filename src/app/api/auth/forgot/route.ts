@@ -31,6 +31,13 @@ export async function POST(req: NextRequest) {
     }
 
     const email = parsed.data.email.trim().toLowerCase();
+
+    // Límite por correo destino (además del de IP): sin esto, un atacante
+    // distribuido puede inundar la bandeja de una víctima pidiendo códigos.
+    // Respuesta neutral igualmente para no revelar nada.
+    const rlEmail = await checkRateLimit(`email:${email}`, "forgot-target", 3, 900);
+    if (!rlEmail.allowed) return NextResponse.json(NEUTRAL);
+
     const user = await db.query.users.findFirst({ where: eq(users.email, email) });
     if (!user) return NextResponse.json(NEUTRAL);
 

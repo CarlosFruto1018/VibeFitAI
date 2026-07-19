@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db/client";
 import { users, accounts, authSessions, verificationTokens } from "@/lib/db/schema";
 import { verifyPassword } from "@/lib/password";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 // Sanear AUTH_URL antes de que NextAuth la parsee: un valor sin esquema
 // (p. ej. "vibefitai.vercel.app") lanza TypeError: Invalid URL en cada
@@ -38,6 +39,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const email = typeof credentials?.email === "string" ? credentials.email.trim().toLowerCase() : "";
         const password = typeof credentials?.password === "string" ? credentials.password : "";
         if (!email || !password) return null;
+
+        // Anti fuerza bruta: máx. 10 intentos por correo cada 5 minutos.
+        // Se limita por email (no por IP) para que un atacante distribuido
+        // tampoco pueda martillar una cuenta concreta.
+        const rl = await checkRateLimit(`login:${email}`, "login", 10, 300);
+        if (!rl.allowed) return null;
 
         const user = await db.query.users.findFirst({ where: eq(users.email, email) });
         // Sin passwordHash (cuenta solo-Google) se rechaza igual que una

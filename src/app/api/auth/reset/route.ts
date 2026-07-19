@@ -28,6 +28,12 @@ export async function POST(req: NextRequest) {
     }
 
     const email = parsed.data.email.trim().toLowerCase();
+
+    // Mismo contador por correo que /verify-code: ambos endpoints validan el
+    // código, así que comparten el presupuesto de 10 intentos por 15 min.
+    const rlEmail = await checkRateLimit(`email:${email}`, "code-attempts", 10, 900);
+    if (!rlEmail.allowed) return rateLimitResponse(rlEmail.retryAfterSec);
+
     const valid = await isResetCodeValid(email, parsed.data.code);
 
     if (!valid) {

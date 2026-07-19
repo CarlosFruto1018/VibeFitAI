@@ -26,6 +26,13 @@ export async function POST(req: NextRequest) {
     }
 
     const email = parsed.data.email.trim().toLowerCase();
+
+    // Límite también por correo objetivo: el de IP solo no basta contra un
+    // atacante distribuido probando combinaciones del código de 6 dígitos.
+    // 10 intentos / 15 min (la vida del código) hace la fuerza bruta inviable.
+    const rlEmail = await checkRateLimit(`email:${email}`, "code-attempts", 10, 900);
+    if (!rlEmail.allowed) return rateLimitResponse(rlEmail.retryAfterSec);
+
     const valid = await isResetCodeValid(email, parsed.data.code);
 
     if (!valid) {
