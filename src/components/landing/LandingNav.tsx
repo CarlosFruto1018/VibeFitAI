@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { Dumbbell } from "lucide-react";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
+import { isLocale, DEFAULT_LOCALE } from "@/i18n/config";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 export async function LandingNav() {
-  const t = await getTranslations("landing.nav");
+  const [t, rawLocale] = await Promise.all([getTranslations("landing.nav"), getLocale()]);
+  const locale = isLocale(rawLocale) ? rawLocale : DEFAULT_LOCALE;
   const LINKS = [
     { href: "#caracteristicas", label: t("features") },
     { href: "#como-funciona", label: t("howItWorks") },
@@ -30,12 +33,15 @@ export async function LandingNav() {
           ))}
         </nav>
 
-        <Link
-          href="/login"
-          className="bg-primary hover:bg-primary/90 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-        >
-          {t("login")}
-        </Link>
+        <div className="flex items-center gap-3">
+          <LanguageSwitcher locale={locale} variant="compact" />
+          <Link
+            href="/login"
+            className="bg-primary hover:bg-primary/90 text-white text-sm font-semibold px-5 py-2.5 rounded-full transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+          >
+            {t("login")}
+          </Link>
+        </div>
       </div>
     </header>
   );
